@@ -175,7 +175,7 @@ class SpmPipelineOperator(SpmOperator):
             provide_context=False,
             templates_dict=None,
             templates_exts=None,
-            parent_task,
+            parent_task=None,
             matlab_paths=None,
             validate_result_callable=default_validate_result,
             output_folder_callable=default_output_folder,
