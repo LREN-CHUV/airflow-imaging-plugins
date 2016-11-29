@@ -21,6 +21,8 @@ except:
     logging.error('Matlab not available on this node')
 
 # Will show up under airflow.operators.PluginOperator
+
+
 class SpmOperator(PythonOperator):
 
     """
@@ -115,10 +117,13 @@ def default_validate_result(return_value, task_id):
     if success < 1.0:
         raise RuntimeError('%s failed' % task_id)
 
+
 def default_output_folder(input_data_folder):
     return input_data_folder
 
 # Will show up under airflow.operators.PluginOperator
+
+
 class SpmPipelineOperator(SpmOperator):
 
     """
@@ -176,13 +181,13 @@ class SpmPipelineOperator(SpmOperator):
             output_folder_callable=default_output_folder,
             *args, **kwargs):
         super(SpmPipelineOperator, self).__init__(python_callable=spm_arguments_callable,
-                                          op_args=op_args,
-                                          op_kwargs=op_kwargs,
-                                          provide_context=provide_context,
-                                          templates_dict=templates_dict,
-                                          templates_exts=templates_exts,
-                                          matlab_paths=matlab_paths,
-                                          *args, **kwargs)
+                                                  op_args=op_args,
+                                                  op_kwargs=op_kwargs,
+                                                  provide_context=provide_context,
+                                                  templates_dict=templates_dict,
+                                                  templates_exts=templates_exts,
+                                                  matlab_paths=matlab_paths,
+                                                  *args, **kwargs)
         self.spm_function = spm_function
         self.parent_task = parent_task
         self.validate_result_callable = validate_result_callable
@@ -191,10 +196,14 @@ class SpmPipelineOperator(SpmOperator):
     def pre_execute(self, context):
         super(SpmPipelineOperator, self).pre_execute(context)
         ti = context['ti']
-        self.input_data_folder = ti.xcom_pull(key='folder', task_ids=self.parent_task)
-        self.session_id = ti.xcom_pull(key='session_id', task_ids=self.parent_task)
-        self.participant_id = ti.xcom_pull(key='participant_id', task_ids=self.parent_task)
-        self.scan_date = ti.xcom_pull(key='scan_date', task_ids=self.parent_task)
+        self.input_data_folder = ti.xcom_pull(
+            key='folder', task_ids=self.parent_task)
+        self.session_id = ti.xcom_pull(
+            key='session_id', task_ids=self.parent_task)
+        self.participant_id = ti.xcom_pull(
+            key='participant_id', task_ids=self.parent_task)
+        self.scan_date = ti.xcom_pull(
+            key='scan_date', task_ids=self.parent_task)
         self.out = StringIO.StringIO()
         self.err = StringIO.StringIO()
         self.op_kwargs['input_data_folder'] = self.input_data_folder
@@ -211,10 +220,12 @@ class SpmPipelineOperator(SpmOperator):
                 if self.op_kwargs:
                     spm_args_str = spm_args_str + ','
             if self.op_kwargs:
-                spm_args_str = spm_args_str + ','.join("=".join((str(k),str(v))) for k,v in self.op_kwargs.items())
+                spm_args_str = spm_args_str + \
+                    ','.join("=".join((str(k), str(v)))
+                             for k, v in self.op_kwargs.items())
 
             logging.info("Calling %s(%s)" % (self.spm_function, spm_args_str))
-            result_value = getattr(self.engine, self.spm_function)(*self.op_args, **self.op_kwargs, stdout=self.out, stderr=self.err)
+            result_value = getattr(self.engine, self.spm_function)(stdout=self.out, stderr=self.err, *self.op_args, **self.op_kwargs)
 
             self.engine.exit()
             self.engine = None
@@ -238,10 +249,12 @@ class SpmPipelineOperator(SpmOperator):
         logging.info("-----------")
 
         ti = context['ti']
-        ti.xcom_push(key='folder', value=self.output_folder_callable(*self.op_args, **self.op_kwargs))
+        ti.xcom_push(key='folder', value=self.output_folder_callable(
+            *self.op_args, **self.op_kwargs))
         ti.xcom_push(key='session_id', value=self.session_id)
         ti.xcom_push(key='participant_id', value=self.participant_id)
         ti.xcom_push(key='scan_date', value=self.scan_date)
+
 
 class SpmPlugin(AirflowPlugin):
     name = "spm"
