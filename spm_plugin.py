@@ -17,7 +17,7 @@ if path not in sys.path:
 
 try:
     import matlab.engine
-except:
+except IOError, RuntimeError:
     logging.error('Matlab not available on this node')
 
 # Will show up under airflow.operators.PluginOperator
@@ -213,7 +213,6 @@ class SpmPipelineOperator(SpmOperator):
 
     def execute(self, context):
         if self.engine:
-            spm_args = super(SpmPipelineOperator, self).execute(context)
             spm_args_str = ''
             if self.op_args:
                 spm_args_str = ','.join(map(str, self.op_args))
