@@ -17,7 +17,7 @@ if path not in sys.path:
 
 try:
     import matlab.engine
-except IOError, RuntimeError:
+except (IOError, RuntimeError):
     logging.error('Matlab not available on this node')
 
 # Will show up under airflow.operators.PluginOperator
