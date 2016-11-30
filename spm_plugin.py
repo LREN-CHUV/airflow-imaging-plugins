@@ -6,7 +6,10 @@ from airflow import configuration
 from airflow import AirflowException
 
 import logging
-import StringIO
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
 
 # append sys.path in order to import local python file
 import sys
@@ -17,7 +20,7 @@ if path not in sys.path:
 
 try:
     import matlab.engine
-except (IOError, RuntimeError):
+except (IOError, RuntimeError, ImportError):
     logging.error('Matlab not available on this node')
 
 # Will show up under airflow.operators.PluginOperator
