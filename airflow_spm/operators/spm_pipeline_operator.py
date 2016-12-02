@@ -16,6 +16,13 @@ except ImportError:
     from io import StringIO
 
 
+def default_validate_result(return_value, task_id):
+    if success < 1.0:
+        raise RuntimeError('%s failed' % task_id)
+
+def default_output_folder(input_data_folder):
+    return input_data_folder
+
 class SpmPipelineOperator(SpmOperator):
 
     """
