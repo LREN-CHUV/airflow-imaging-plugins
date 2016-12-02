@@ -7,7 +7,7 @@
 
 from airflow.operators import PythonOperator
 
-from airflow.utils.decorator import apply_defaults
+from airflow.utils import apply_defaults
 from airflow import configuration
 from airflow_spm.errors import SPMError
 import logging

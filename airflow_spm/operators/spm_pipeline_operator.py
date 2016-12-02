@@ -5,7 +5,7 @@
 .. moduleauthor:: Ludovic Claude <ludovic.claude@chuv.ch>
 """
 
-from airflow.utils.decorator import apply_defaults
+from airflow.utils import apply_defaults
 from airflow_spm.errors import SPMError
 from .spm_operator import SpmOperator
 import logging
