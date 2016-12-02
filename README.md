@@ -7,3 +7,9 @@ Set of plugins helping to work with imaging data in Airflow.
 Those include:
 
 * spm_plugin: Executes a pipeline on SPM, where a 'pipeline' is a function implemented in SPM
+
+## Installation
+
+```
+  pip install from git: pip install git+https://github.com/LREN-CHUV/airflow-imaging-plugins.git@master#egg=airflow_imaging_plugins
+```
