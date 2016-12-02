@@ -13,3 +13,10 @@ Those include:
 ```
   pip install from git: pip install git+https://github.com/LREN-CHUV/airflow-imaging-plugins.git@master#egg=airflow_imaging_plugins
 ```
+
+## Setup and configuration
+
+### Airflow setup for MRI scans pipeline:
+
+* In Airflow config file, add the [spm] section with the following entries:
+   * SPM_DIR: root path to the installation of SPM
