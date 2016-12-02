@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 setup(
     name="airflow_imaging_plugins",
@@ -8,7 +8,7 @@ setup(
     url='https://github.com/LREN-CHUV/airflow-imaging-plugins',
     license='Apache License 2.0',
     zip_safe=False,
-    packages=['airflow_spm'],
+    packages=find_packages(exclude=['docs', 'tests*']),
     install_requires=[
         'airflow~=1.7.0'
     ]
