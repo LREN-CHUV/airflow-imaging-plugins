@@ -1,5 +1,8 @@
 import os
+import logging
+
 from airflow.operators import BaseSensorOperator
+from airflow.utils import apply_defaults
 
 class FreeSpaceSensor(BaseSensorOperator):
     """
