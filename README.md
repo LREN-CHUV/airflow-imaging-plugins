@@ -6,7 +6,9 @@ Set of plugins helping to work with imaging data in Airflow.
 
 Those include:
 
-* spm_plugin: Executes a pipeline on SPM, where a 'pipeline' is a function implemented in SPM
+* airflow_spm.operators.SpmOperator: Executes SPM or just Matlab
+* airflow_spm.operators.SpmPipelineOperator: Executes a pipeline on SPM, where a 'pipeline' is a function implemented in SPM
+* airflow_freespace.operators.FreeSpaceSensor: Waits for enough free disk space on the disk.
 
 ## Installation
 
