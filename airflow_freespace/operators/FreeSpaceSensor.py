@@ -1,6 +1,7 @@
 import os
 import airflow.sensors.BaseSensorOperator
 
+
 class FreeSpaceSensor(BaseSensorOperator):
     """
     Waits until their is enough free space on the disk.
