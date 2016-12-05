@@ -1,5 +1,5 @@
 import os
-import airflow.sensors.BaseSensorOperator
+import airflow.operators.BaseSensorOperator
 
 
 class FreeSpaceSensor(BaseSensorOperator):
