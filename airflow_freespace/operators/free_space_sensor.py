@@ -17,7 +17,7 @@ class FreeSpaceSensor(BaseSensorOperator):
 
     @apply_defaults
     def __init__(self, path, free_disk_threshold, *args, **kwargs):
-        super(TimeSensor, self).__init__(*args, **kwargs)
+        super(FreeSpaceSensor, self).__init__(*args, **kwargs)
         self.path = path
         self.free_disk_threshold = free_disk_threshold
 
