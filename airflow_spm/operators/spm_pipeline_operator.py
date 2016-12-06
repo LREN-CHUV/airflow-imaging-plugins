@@ -124,7 +124,7 @@ class SpmPipelineOperator(SpmOperator):
                     ','.join("=".join((str(k), str(v)))
                              for k, v in self.op_kwargs.items())
 
-            logging.info("Calling %s(%s)" % (self.spm_function, spm_args_str))
+            logging.info("Calling engine.%s(%s)" % (self.spm_function, spm_args_str))
             result_value = getattr(self.engine, self.spm_function)(
                 stdout=self.out, stderr=self.err, *self.op_args, **self.op_kwargs)
 

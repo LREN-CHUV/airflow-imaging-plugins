@@ -80,7 +80,6 @@ class SpmOperator(PythonOperator):
                 for path in self.matlab_paths:
                     self.engine.addpath(path)
             self.engine.addpath(spm_dir)
-            self.op_kwargs['engine'] = self.engine
         else:
             msg = 'Matlab has not started on this node'
             logging.error(msg)
@@ -88,6 +87,7 @@ class SpmOperator(PythonOperator):
 
     def execute(self, context):
         if self.engine:
+            self.op_kwargs['engine'] = self.engine
             result = super(SpmOperator, self).execute(context)
             self.engine.exit()
             self.engine = None
