@@ -20,8 +20,10 @@ def default_validate_result(return_value, task_id):
     if success < 1.0:
         raise RuntimeError('%s failed' % task_id)
 
+
 def default_output_folder(input_data_folder):
     return input_data_folder
+
 
 class SpmPipelineOperator(SpmOperator):
 
@@ -103,8 +105,8 @@ class SpmPipelineOperator(SpmOperator):
             key='participant_id', task_ids=self.parent_task)
         self.scan_date = ti.xcom_pull(
             key='scan_date', task_ids=self.parent_task)
-        self.out = StringIO.StringIO()
-        self.err = StringIO.StringIO()
+        self.out = StringIO()
+        self.err = StringIO()
         self.op_kwargs['input_data_folder'] = self.input_data_folder
         self.op_kwargs['session_id'] = self.session_id
         self.op_kwargs['participant_id'] = self.participant_id
@@ -123,7 +125,8 @@ class SpmPipelineOperator(SpmOperator):
                              for k, v in self.op_kwargs.items())
 
             logging.info("Calling %s(%s)" % (self.spm_function, spm_args_str))
-            result_value = getattr(self.engine, self.spm_function)(stdout=self.out, stderr=self.err, *self.op_args, **self.op_kwargs)
+            result_value = getattr(self.engine, self.spm_function)(
+                stdout=self.out, stderr=self.err, *self.op_args, **self.op_kwargs)
 
             self.engine.exit()
             self.engine = None
