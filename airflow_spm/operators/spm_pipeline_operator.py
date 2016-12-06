@@ -5,9 +5,11 @@
 .. moduleauthor:: Ludovic Claude <ludovic.claude@chuv.ch>
 """
 
+from airflow import configuration
+from airflow.operators import PythonOperator
 from airflow.utils import apply_defaults
 from airflow_spm.errors import SPMError
-from .spm_operator import SpmOperator
+
 import logging
 
 from io import StringIO
@@ -22,7 +24,7 @@ def default_output_folder(input_data_folder):
     return input_data_folder
 
 
-class SpmPipelineOperator(SpmOperator):
+class SpmPipelineOperator(PythonOperator):
 
     """
     Executes a pipeline on SPM, where a 'pipeline' is a function implemented in SPM.
@@ -84,15 +86,26 @@ class SpmPipelineOperator(SpmOperator):
                                                   provide_context=provide_context,
                                                   templates_dict=templates_dict,
                                                   templates_exts=templates_exts,
-                                                  matlab_paths=matlab_paths,
                                                   *args, **kwargs)
         self.spm_function = spm_function
         self.parent_task = parent_task
+        self.matlab_paths = matlab_paths
         self.validate_result_callable = validate_result_callable
         self.output_folder_callable = output_folder_callable
 
     def pre_execute(self, context):
-        super(SpmPipelineOperator, self).pre_execute(context)
+        spm_dir = str(configuration.get('spm', 'SPM_DIR'))
+        if matlab.engine:
+            self.engine = matlab.engine.start_matlab()
+        if self.engine:
+            if self.matlab_paths:
+                for path in self.matlab_paths:
+                    self.engine.addpath(path)
+            self.engine.addpath(spm_dir)
+        else:
+            msg = 'Matlab has not started on this node'
+            logging.error(msg)
+            raise SPMError(msg)
         ti = context['ti']
         self.input_data_folder = ti.xcom_pull(
             key='folder', task_ids=self.parent_task)
@@ -111,20 +124,13 @@ class SpmPipelineOperator(SpmOperator):
 
     def execute(self, context):
         if self.engine:
-            spm_args_str = ''
-            if self.op_args:
-                spm_args_str = ','.join(map(str, self.op_args))
-                if self.op_kwargs:
-                    spm_args_str = spm_args_str + ','
-            if self.op_kwargs:
-                spm_args_str = spm_args_str + \
-                    ','.join("=".join((str(k), str(v)))
-                             for k, v in self.op_kwargs.items())
+            params = super(SpmOperator, self).execute(context)
 
             logging.info("Calling engine.%s(%s)" %
-                         (self.spm_function, spm_args_str))
+                         (self.spm_function, ','.join(map(str, params))))
+
             result_value = getattr(self.engine, self.spm_function)(
-                stdout=self.out, stderr=self.err, *self.op_args, **self.op_kwargs)
+                stdout=self.out, stderr=self.err, *params)
 
             self.engine.exit()
             self.engine = None
@@ -137,8 +143,15 @@ class SpmPipelineOperator(SpmOperator):
             logging.error(msg)
             raise SPMError(msg)
 
+    def on_kill(self):
+        if self.engine:
+            self.engine.exit()
+            self.engine = None
+
     def post_execute(self, context):
-        super(SpmPipelineOperator, self).post_execute(context)
+        if self.engine:
+            self.engine.exit()
+            self.engine = None
 
         logging.info("-----------")
         logging.info("SPM output:")

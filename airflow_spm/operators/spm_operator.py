@@ -5,11 +5,11 @@
 .. moduleauthor:: Ludovic Claude <ludovic.claude@chuv.ch>
 """
 
-from airflow.operators import PythonOperator
-
-from airflow.utils import apply_defaults
 from airflow import configuration
+from airflow.operators import PythonOperator
+from airflow.utils import apply_defaults
 from airflow_spm.errors import SPMError
+
 import logging
 
 try:
@@ -106,12 +106,3 @@ class SpmOperator(PythonOperator):
         if self.engine:
             self.engine.exit()
             self.engine = None
-
-
-def default_validate_result(return_value, task_id):
-    if success < 1.0:
-        raise RuntimeError('%s failed' % task_id)
-
-
-def default_output_folder(input_data_folder):
-    return input_data_folder
