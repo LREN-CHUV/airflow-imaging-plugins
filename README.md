@@ -9,6 +9,7 @@ Those include:
 * airflow_spm.operators.SpmOperator: Executes SPM or just Matlab
 * airflow_spm.operators.SpmPipelineOperator: Executes a pipeline on SPM, where a 'pipeline' is a function implemented in SPM
 * airflow_freespace.operators.FreeSpaceSensor: Waits for enough free disk space on the disk.
+* airflow_scan_folder.operators.ScanFolderOperator: Triggers a DAG run for a specified ``dag_id`` for each scan folder discovered in a daily folder.
 
 ## Installation
 
