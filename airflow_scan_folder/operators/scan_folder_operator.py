@@ -13,24 +13,29 @@ from airflow.utils import apply_defaults
 from airflow.operators.dagrun_operator import DagRunOrder
 from airflow.exceptions import AirflowSkipException
 
+
 def default_is_valid_session_id(session_id):
     sid = session_id.strip().lower()
     return not ('delete' in sid) and not ('phantom' in sid)
 
+
 def default_look_for_ready_file_marker(daily_folder_date):
     return daily_folder_date.date() == datetime.today().date()
+
 
 def default_trigger_dagrun(context, dag_run_obj):
     if True:
         session_id = context['params']['session_id']
         start_date = context['start_date']
-        logging.info('Trigger DAG run : %s at %s', str(session_id), start_date.strftime('%Y%m%d-%h%M'))
+        logging.info('Trigger DAG run : %s at %s', str(
+            session_id), start_date.strftime('%Y%m%d-%H%M'))
         # The payload will be available in target dag context as
         # kwargs['dag_run'].conf
         dag_run_obj.payload = context['params']
         dag_run_obj.run_id = session_id + '-' + \
-            start_date.strftime('%Y%m%d-%h%M')
+            start_date.strftime('%Y%m%d-%H%M')
         return dag_run_obj
+
 
 def roundTime(dt=None, dateDelta=timedelta(minutes=1)):
     """Round a datetime object to a multiple of a timedelta
@@ -41,11 +46,13 @@ def roundTime(dt=None, dateDelta=timedelta(minutes=1)):
     """
     roundTo = dateDelta.total_seconds()
 
-    if dt == None : dt = datetime.now()
+    if dt == None:
+        dt = datetime.now()
     seconds = (dt - dt.min).seconds
     # rounding up, // is a floor division, not a comment on following line:
-    rounding = (seconds+roundTo) // roundTo * roundTo
-    return dt + timedelta(0,rounding-seconds,-dt.microsecond)
+    rounding = (seconds + roundTo) // roundTo * roundTo
+    return dt + timedelta(0, rounding - seconds, -dt.microsecond)
+
 
 class ScanFolderOperator(BaseOperator):
     """
@@ -142,8 +149,9 @@ class ScanFolderOperator(BaseOperator):
             dr = DagRun(
                 dag_id=self.trigger_dag_id,
                 run_id=dro.run_id,
+                execution_date=dr_time,
+                state=State.RUNNING,
                 conf=dro.payload,
-                start_date=dr_time,
                 external_trigger=True)
             logging.info("Creating DagRun {}".format(dr))
             session.add(dr)
