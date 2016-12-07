@@ -7,6 +7,7 @@ import copy
 from time import sleep
 from datetime import datetime, timedelta
 
+from airflow import settings
 from airflow.operators import BaseOperator
 from airflow.utils import apply_defaults
 from airflow.operators.dagrun_operator import DagRunOrder
@@ -23,7 +24,7 @@ def default_trigger_dagrun(context, dag_run_obj):
     if True:
         session_id = context['params']['session_id']
         start_date = context['start_date']
-        logging.info('Trigger DAG run : %s at %s', (str(session_id), start_date.strftime('%Y%m%d-%h%M')))
+        logging.info('Trigger DAG run : %s at %s', str(session_id), start_date.strftime('%Y%m%d-%h%M'))
         # The payload will be available in target dag context as
         # kwargs['dag_run'].conf
         dag_run_obj.payload = context['params']
