@@ -22,7 +22,7 @@ def default_look_for_ready_file_marker(daily_folder_date):
 def default_trigger_dagrun(context, dag_run_obj):
     if True:
         session_id = context['params']['session_id']
-        start_date = context['params']['start_date']
+        start_date = context['start_date']
         logging.info('Trigger DAG run : %s at %s', (str(session_id), start_date.strftime('%Y%m%d-%h%M')))
         # The payload will be available in target dag context as
         # kwargs['dag_run'].conf
@@ -132,6 +132,8 @@ class ScanFolderOperator(BaseOperator):
         context_params['session_id'] = session_dir_name
 
         dr_time = roundTime(datetime.now() + timedelta(minutes=1))
+        context['start_date'] = dr_time
+
         dro = DagRunOrder(run_id='trig__' + dr_time.isoformat())
         dro = self.python_callable(context, dro)
         if dro:
