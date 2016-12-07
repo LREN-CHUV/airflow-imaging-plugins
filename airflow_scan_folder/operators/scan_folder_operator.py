@@ -7,6 +7,7 @@ import copy
 from time import sleep
 from datetime import datetime, timedelta
 
+from airflow.operators import BaseOperator
 from airflow.operators.dagrun_operator import DagRunOrder
 from airflow.exceptions import AirflowSkipException
 
