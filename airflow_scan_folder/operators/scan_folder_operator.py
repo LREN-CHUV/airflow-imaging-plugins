@@ -171,4 +171,5 @@ class ScanFolderOperator(BaseOperator):
         except IntegrityError:
             # Bad luck, some concurrent thread has already created an execution
             # at this time
+            session.rollback()
             self.trigger_dag_run(context, path, session_dir_name, offset + 1)
