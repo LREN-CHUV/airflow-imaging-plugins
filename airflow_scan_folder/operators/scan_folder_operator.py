@@ -142,7 +142,7 @@ class ScanFolderOperator(BaseOperator):
             dr_time = roundUpTime(dateDelta=timedelta(minutes=offset))
             run_id = "trig__{0}".format(dr_time.isoformat())
             dr = session.query(DagRun).filter(
-                DagRun.dag_id == args.dag_id, DagRun.run_id == run_id).first()
+                DagRun.dag_id == self.trigger_dag_id, DagRun.run_id == run_id).first()
             if dr is None:
                 break
             offset=offset + 1
