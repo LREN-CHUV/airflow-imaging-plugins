@@ -38,7 +38,7 @@ def default_trigger_dagrun(context, dag_run_obj):
         return dag_run_obj
 
 
-def roundTime(dt=None, dateDelta=timedelta(minutes=1)):
+def roundUpTime(dt=None, dateDelta=timedelta(minutes=1)):
     """Round a datetime object to a multiple of a timedelta
     dt : datetime.datetime object, default now.
     dateDelta : timedelta object, we round to a multiple of this, default 1 minute.
@@ -100,6 +100,7 @@ class ScanFolderOperator(BaseOperator):
 
     def scan_dirs(self, folder, context):
         daily_folder_date = context['execution_date']
+        offset = 1
 
         if not os.path.exists(folder):
             raise AirflowSkipException
@@ -124,14 +125,10 @@ class ScanFolderOperator(BaseOperator):
                     logging.info(
                         'Prepare trigger for preprocessing : %s', str(fname))
 
-                    self.trigger_dag_run(context, path, fname)
+                    self.trigger_dag_run(context, path, fname, offset)
+                    offset = offset + 1
 
-                    # Avoid creating Dags at the same time, overwise may
-                    # get 'Duplicate entry pre_process_dicom-2016-06-06
-                    # 00:01:00 for key dag_id'
-                    sleep(60)
-
-    def trigger_dag_run(self, context, path, session_dir_name):
+    def trigger_dag_run(self, context, path, session_dir_name, offset):
         context = copy.copy(context)
         context_params = context['params']
         # Folder containing the DICOM files to process
@@ -140,7 +137,7 @@ class ScanFolderOperator(BaseOperator):
         # last part of the folder path should match session_id
         context_params['session_id'] = session_dir_name
 
-        dr_time = roundTime(datetime.now() + timedelta(minutes=1))
+        dr_time = roundUpTime(dateDelta=timedelta(minutes=offset))
         context['start_date'] = dr_time
 
         dro = DagRunOrder(run_id='trig__' + dr_time.isoformat())
