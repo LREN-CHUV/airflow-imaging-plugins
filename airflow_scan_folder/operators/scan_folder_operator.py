@@ -13,7 +13,7 @@ from airflow.utils import apply_defaults
 from airflow.utils.state import State
 from airflow.operators.dagrun_operator import DagRunOrder
 from airflow.exceptions import AirflowSkipException
-
+from sqlalchemy.exc import IntegrityError
 
 def default_is_valid_session_id(session_id):
     sid = session_id.strip().lower()
@@ -149,19 +149,24 @@ class ScanFolderOperator(BaseOperator):
 
         context['start_date'] = dr_time
 
-        dro = DagRunOrder(run_id = run_id)
-        dro = self.python_callable(context, dro)
-        if dro:
-            dr = DagRun(
-                dag_id = self.trigger_dag_id,
-                run_id = dro.run_id,
-                execution_date = dr_time,
-                state = State.RUNNING,
-                conf = dro.payload,
-                external_trigger = True)
-            logging.info("Creating DagRun {}".format(dr))
-            session.add(dr)
-            session.commit()
-            session.close()
-        else:
-            logging.info("Criteria not met, moving on")
+        try:
+            dro = DagRunOrder(run_id = run_id)
+            dro = self.python_callable(context, dro)
+            if dro:
+                dr = DagRun(
+                    dag_id = self.trigger_dag_id,
+                    run_id = dro.run_id,
+                    execution_date = dr_time,
+                    start_date = dr_time,
+                    state = State.RUNNING,
+                    conf = dro.payload,
+                    external_trigger = True)
+                logging.info("Creating DagRun {}".format(dr))
+                session.add(dr)
+                session.commit()
+                session.close()
+            else:
+                logging.info("Criteria not met, moving on")
+        except IntegrityError:
+            # Bad luck, some concurrent thread has already created an execution at this time
+            self.trigger_dag_run(context, path, session_dir_name, offset + 1)
