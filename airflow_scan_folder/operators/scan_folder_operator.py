@@ -137,20 +137,28 @@ class ScanFolderOperator(BaseOperator):
         # last part of the folder path should match session_id
         context_params['session_id'] = session_dir_name
 
-        dr_time = roundUpTime(dateDelta=timedelta(minutes=offset))
+        session = settings.Session()
+        while True:
+            dr_time = roundUpTime(dateDelta=timedelta(minutes=offset))
+            run_id = "trig__{0}".format(dr_time.isoformat()))
+            dr = session.query(DagRun).filter(
+                DagRun.dag_id == args.dag_id, DagRun.run_id == run_id).first()
+            if dr is None:
+                break
+            offset=offset + 1
+
         context['start_date'] = dr_time
 
-        dro = DagRunOrder(run_id='trig__' + dr_time.isoformat())
+        dro = DagRunOrder(run_id = run_id)
         dro = self.python_callable(context, dro)
         if dro:
-            session = settings.Session()
             dr = DagRun(
-                dag_id=self.trigger_dag_id,
-                run_id=dro.run_id,
-                execution_date=dr_time,
-                state=State.RUNNING,
-                conf=dro.payload,
-                external_trigger=True)
+                dag_id = self.trigger_dag_id,
+                run_id = dro.run_id,
+                execution_date = dr_time,
+                state = State.RUNNING,
+                conf = dro.payload,
+                external_trigger = True)
             logging.info("Creating DagRun {}".format(dr))
             session.add(dr)
             session.commit()
