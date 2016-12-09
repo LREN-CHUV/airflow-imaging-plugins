@@ -29,8 +29,6 @@ def default_trigger_dagrun(context, dag_run_obj):
     if True:
         session_id = context['params']['session_id']
         start_date = context['start_date']
-        logging.info('Trigger DAG run : %s at %s', str(
-            session_id), start_date.strftime('%Y%m%d-%H%M'))
         # The payload will be available in target dag context as
         # kwargs['dag_run'].conf
         dag_run_obj.payload = context['params']
@@ -144,9 +142,10 @@ class ScanFolderOperator(BaseOperator):
             run_id = "trig__{0}".format(dr_time.isoformat())
             dr = session.query(DagRun).filter(
                 DagRun.dag_id == self.trigger_dag_id, DagRun.run_id == run_id).first()
-            if dr is None:
+            if dr:
+                offset = offset + 1
+            else:
                 break
-            offset = offset + 1
 
         context['start_date'] = dr_time
 
@@ -158,14 +157,13 @@ class ScanFolderOperator(BaseOperator):
                     dag_id=self.trigger_dag_id,
                     run_id=dro.run_id,
                     execution_date=dr_time,
-                    start_date=dr_time,
                     state=State.RUNNING,
                     conf=dro.payload,
                     external_trigger=True)
-                logging.info("Creating DagRun {}".format(dr))
                 session.add(dr)
                 session.commit()
                 session.close()
+                logging.info("Created DagRun {}".format(dr))
             else:
                 logging.info("Criteria not met, moving on")
         except IntegrityError:
