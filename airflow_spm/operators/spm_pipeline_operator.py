@@ -129,7 +129,7 @@ class SpmPipelineOperator(PythonOperator):
 
     def execute(self, context):
         if self.engine:
-            params = super(SpmOperator, self).execute(context)
+            params = super(SpmPipelineOperator, self).execute(context)
 
             logging.info("Calling engine.%s(%s)" %
                          (self.spm_function, ','.join(map(str, params))))
