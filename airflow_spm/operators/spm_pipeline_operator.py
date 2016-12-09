@@ -14,6 +14,11 @@ import logging
 
 from io import StringIO
 
+try:
+    import matlab.engine
+except (IOError, RuntimeError, ImportError):
+    logging.error('Matlab not available on this node')
+
 
 def default_validate_result(return_value, task_id):
     if success < 1.0:
