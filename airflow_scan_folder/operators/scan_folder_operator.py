@@ -161,16 +161,18 @@ class ScanFolderOperator(BaseOperator):
                     conf=dro.payload,
                     external_trigger=True)
                 session.add(dr)
-                session.commit()
-                session.close()
+                try:
+                    session.commit()
+                except IntegrityError:
+                    # Bad luck, some concurrent thread has already created an execution
+                    # at this time
+                    session.rollback()
+                    session.remove()
+                    session = None
+                    self.trigger_dag_run(context, path, session_dir_name, offset + 1)
                 logging.info("Created DagRun {}".format(dr))
             else:
                 logging.info("Criteria not met, moving on")
-        except IntegrityError:
-            # Bad luck, some concurrent thread has already created an execution
-            # at this time
-            session.rollback()
-            session.close()
-            self.trigger_dag_run(context, path, session_dir_name, offset + 1)
         finally:
-            session.close()
+            if session:
+                session.remove()
