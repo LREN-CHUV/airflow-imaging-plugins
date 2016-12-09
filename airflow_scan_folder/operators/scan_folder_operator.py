@@ -170,4 +170,7 @@ class ScanFolderOperator(BaseOperator):
             # Bad luck, some concurrent thread has already created an execution
             # at this time
             session.rollback()
+            session.close()
             self.trigger_dag_run(context, path, session_dir_name, offset + 1)
+        finally:
+            session.close()
