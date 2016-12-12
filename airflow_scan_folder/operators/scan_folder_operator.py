@@ -163,6 +163,7 @@ class ScanFolderOperator(BaseOperator):
                 session.add(dr)
                 try:
                     session.commit()
+                    logging.info("Created DagRun {}".format(dr))
                 except IntegrityError:
                     # Bad luck, some concurrent thread has already created an execution
                     # at this time
@@ -170,7 +171,6 @@ class ScanFolderOperator(BaseOperator):
                     session.close()
                     session = None
                     self.trigger_dag_run(context, path, session_dir_name, offset + 1)
-                logging.info("Created DagRun {}".format(dr))
             else:
                 logging.info("Criteria not met, moving on")
         finally:
