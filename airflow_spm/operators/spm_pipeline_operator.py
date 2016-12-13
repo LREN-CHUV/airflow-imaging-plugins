@@ -115,12 +115,20 @@ class SpmPipelineOperator(PythonOperator):
         ti = context['ti']
         self.input_data_folder = ti.xcom_pull(
             key='folder', task_ids=self.parent_task)
+        if not self.input_data_folder:
+            logging.warning("xcom argument 'folder' is empty")
         self.session_id = ti.xcom_pull(
             key='session_id', task_ids=self.parent_task)
+        if not self.input_data_folder:
+            logging.warning("xcom argument 'session_id' is empty")
         self.participant_id = ti.xcom_pull(
             key='participant_id', task_ids=self.parent_task)
+        if not self.input_data_folder:
+            logging.warning("xcom argument 'participant_id' is empty")
         self.scan_date = ti.xcom_pull(
             key='scan_date', task_ids=self.parent_task)
+        if not self.input_data_folder:
+            logging.warning("xcom argument 'scan_date' is empty")
         self.out = StringIO()
         self.err = StringIO()
         self.op_kwargs['input_data_folder'] = self.input_data_folder
