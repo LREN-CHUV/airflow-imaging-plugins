@@ -39,5 +39,5 @@ class PreparePipelineOperator(BaseOperator):
 
         logging.info('folder %s, session_id %s' % (folder, session_id))
 
-        xcom_push(key='folder', value=folder)
-        xcom_push(key='session_id', value=session_id)
+        self.xcom_push(key='folder', value=folder)
+        self.xcom_push(key='session_id', value=session_id)
