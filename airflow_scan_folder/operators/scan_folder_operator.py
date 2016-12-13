@@ -99,7 +99,7 @@ class ScanFolderOperator(BaseOperator):
 
     def scan_dirs(self, folder, context):
         daily_folder_date = context['execution_date']
-        offset = 1
+        offset = -1
 
         if not os.path.exists(folder):
             raise AirflowSkipException
@@ -125,7 +125,7 @@ class ScanFolderOperator(BaseOperator):
                         'Prepare trigger for preprocessing : %s', str(fname))
 
                     self.trigger_dag_run(context, path, fname, offset)
-                    offset = offset + 1
+                    offset = offset - 1
 
     def trigger_dag_run(self, context, path, session_dir_name, offset):
         context = copy.copy(context)
@@ -143,7 +143,7 @@ class ScanFolderOperator(BaseOperator):
             dr = session.query(DagRun).filter(
                 DagRun.dag_id == self.trigger_dag_id, DagRun.run_id == run_id).first()
             if dr:
-                offset = offset + 1
+                offset = offset - 1
             else:
                 break
 
@@ -157,6 +157,7 @@ class ScanFolderOperator(BaseOperator):
                     dag_id=self.trigger_dag_id,
                     run_id=dro.run_id,
                     execution_date=dr_time,
+                    start_date=datetime.now(),
                     state=State.RUNNING,
                     conf=dro.payload,
                     external_trigger=True)
@@ -170,7 +171,7 @@ class ScanFolderOperator(BaseOperator):
                     session.rollback()
                     session.close()
                     session = None
-                    self.trigger_dag_run(context, path, session_dir_name, offset + 1)
+                    self.trigger_dag_run(context, path, session_dir_name, offset - 1)
             else:
                 logging.info("Criteria not met, moving on")
         finally:
