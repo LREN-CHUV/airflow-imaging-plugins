@@ -20,7 +20,7 @@ class PreparePipelineOperator(BaseOperator):
 
     template_fields = ()
     template_ext = ()
-    ui_color = '#243147'
+    ui_color = '#94A1B7'
 
     @apply_defaults
     def __init__(

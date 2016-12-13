@@ -37,7 +37,7 @@ class PythonPipelineOperator(PythonOperator):
     """
     template_fields = ('templates_dict',)
     template_ext = tuple()
-    ui_color = '#243147'
+    ui_color = '#94A147'
 
     @apply_defaults
     def __init__(
