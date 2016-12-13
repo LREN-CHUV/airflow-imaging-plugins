@@ -21,7 +21,7 @@ except (IOError, RuntimeError, ImportError):
 
 
 def default_validate_result(return_value, task_id):
-    if success < 1.0:
+    if return_value <= 0:
         raise RuntimeError('%s failed' % task_id)
 
 
@@ -35,6 +35,7 @@ class SpmPipelineOperator(PythonOperator):
     Executes a pipeline on SPM, where a 'pipeline' is a function implemented in SPM.
 
     :param spm_function: Name of the SPM function to call.
+        The SPM function should return 1.0 on success, 0.0 on failure
     :type spm_function: string
     :param spm_arguments_callable: A reference to an object that is callable.
         It should return a list of arguments to call on the SPM function.
