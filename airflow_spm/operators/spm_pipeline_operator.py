@@ -149,6 +149,18 @@ class SpmPipelineOperator(PythonOperator):
             logging.error(msg)
             raise SPMError(msg)
 
+    def handle_failure(self, error, test_mode=False, context=None):
+        if self.out or self.err:
+            logging.info("-----------")
+            if self.out:
+                logging.info("SPM output:")
+                logging.info(self.out.getvalue())
+            if self.err:
+                logging.info("SPM errors:")
+                logging.info(self.err.getvalue())
+            logging.info("-----------")
+        super(SpmPipelineOperator, self).handle_failure(error, test_mode=False, context=None)
+
     def on_kill(self):
         if self.engine:
             self.engine.exit()
