@@ -57,6 +57,7 @@ class PythonPipelineOperator(PythonOperator):
                                                      templates_dict=templates_dict,
                                                      templates_exts=templates_exts,
                                                      *args, **kwargs)
+        self.op_kwargs = op_kwargs
         self.parent_task = parent_task
 
     def pre_execute(self, context):
@@ -86,7 +87,7 @@ class PythonPipelineOperator(PythonOperator):
         return_value = self.python_callable(*self.op_args, **self.op_kwargs)
         logging.info("Done. Returned value was: " + str(return_value))
 
-        if type(return_value) is dict:
+        if isinstance(return_value, dict):
             for k in ['folder', 'participant_id', 'scan_date']:
                 if k in return_value:
                     self.__setattr__(k, return_value[k])
