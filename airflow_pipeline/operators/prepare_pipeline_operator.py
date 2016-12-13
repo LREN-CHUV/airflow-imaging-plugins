@@ -27,7 +27,7 @@ class PreparePipelineOperator(BaseOperator):
             self,
             initial_root_folder,
             *args, **kwargs):
-        super(EmailOperator, self).__init__(*args, **kwargs)
+        super(PreparePipelineOperator, self).__init__(*args, **kwargs)
         self.initial_root_folder = initial_root_folder
 
     def execute(self, context):
