@@ -4,7 +4,6 @@ import logging
 import os
 import copy
 
-from time import sleep
 from datetime import datetime, timedelta
 
 from airflow import settings

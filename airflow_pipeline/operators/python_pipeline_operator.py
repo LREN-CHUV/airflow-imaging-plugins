@@ -48,12 +48,10 @@ class PythonPipelineOperator(PythonOperator):
             provide_context=True,
             templates_dict=None,
             templates_exts=None,
-            base_folder=None,
             parent_task=None,
             *args, **kwargs):
         super(PythonPipelineOperator, self).__init__(python_callable, op_args, op_kwargs,
                                                      provide_context, templates_dict, templates_exts, *args, **kwargs)
-        self.base_folder = base_folder
         self.parent_task = parent_task
 
     def pre_execute(self, context):
@@ -74,7 +72,6 @@ class PythonPipelineOperator(PythonOperator):
         if self.provide_context:
             context.update(self.op_kwargs)
             context['templates_dict'] = self.templates_dict
-            context['base_folder'] = self.base_folder
             context['folder'] = self.folder
             context['session_id'] = self.session_id
             context['participant_id'] = self.participant_id
