@@ -8,6 +8,8 @@
 from airflow.operators import PythonOperator
 from airflow.utils import apply_defaults
 
+import logging
+
 
 class PythonPipelineOperator(PythonOperator):
     """
