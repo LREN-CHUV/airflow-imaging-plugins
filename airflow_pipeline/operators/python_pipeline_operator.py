@@ -98,6 +98,6 @@ class PythonPipelineOperator(PythonOperator):
     def post_execute(self, context):
         self.xcom_push(context, key='folder', value=self.folder)
         self.xcom_push(context, key='session_id', value=self.session_id)
-        self.xcom_pull(context, key='participant_id',
+        self.xcom_push(context, key='participant_id',
                        value=self.participant_id)
-        self.xcom_pull(context, key='scan_date', value=self.scan_date)
+        self.xcom_push(context, key='scan_date', value=self.scan_date)
