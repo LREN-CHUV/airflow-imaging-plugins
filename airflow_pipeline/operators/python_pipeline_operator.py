@@ -50,14 +50,13 @@ class PythonPipelineOperator(PythonOperator):
             templates_exts=None,
             parent_task=None,
             *args, **kwargs):
-        super(PythonPipelineOperator, self).__init__(python_callable=python_callable,
-                                                     op_args=op_args,
-                                                     op_kwargs=op_kwargs,
-                                                     provide_context=provide_context,
-                                                     templates_dict=templates_dict,
-                                                     templates_exts=templates_exts,
-                                                     *args, **kwargs)
-        self.op_kwargs = op_kwargs
+        super().__init__(python_callable=python_callable,
+                         op_args=op_args,
+                         op_kwargs=op_kwargs,
+                         provide_context=provide_context,
+                         templates_dict=templates_dict,
+                         templates_exts=templates_exts,
+                         *args, **kwargs)
         self.parent_task = parent_task
 
     def pre_execute(self, context):
