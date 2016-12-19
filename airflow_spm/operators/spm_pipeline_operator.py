@@ -8,6 +8,7 @@
 from airflow import configuration
 from airflow.operators import PythonOperator
 from airflow.utils import apply_defaults
+from airflow.exceptions import AirflowSkipException
 from airflow_spm.errors import SPMError
 
 import logging
@@ -21,8 +22,10 @@ except (IOError, RuntimeError, ImportError):
 
 
 def default_validate_result(return_value, task_id):
+    if return_value == 0.0:
+        raise AirflowSkipException
     if return_value <= 0:
-        raise RuntimeError('%s failed' % task_id)
+        raise SPMError('%s failed' % task_id)
 
 
 def default_output_folder(folder):

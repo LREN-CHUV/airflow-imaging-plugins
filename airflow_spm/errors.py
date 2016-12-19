@@ -1,5 +1,6 @@
+from airflow.exceptions import AirflowException
 
-class SPMError(Exception):
+class SPMError(AirflowException):
     """
     Provide a general purpose Exception for SPM.
     """
