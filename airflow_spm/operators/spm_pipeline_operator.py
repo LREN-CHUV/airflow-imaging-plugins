@@ -194,25 +194,26 @@ class SpmPipelineOperator(PythonOperator):
 
     def trigger_dag(self, context, dag_id):
         if dag_id:
-            dro = DagRunOrder(run_id='trig__' + datetime.now().isoformat())
-            dro.payload = {'folder': self.output_folder_callable(*self.op_args, **self.op_kwargs),
-                           'session_id': self.session_id,
-                           'participant_id': self.participant_id,
-                           'scan_date': self.scan_date,
-                           'task_id': self.task_id
-                           }
+            run_id = 'trig__' + datetime.now().isoformat()
+            payload = {'folder': self.output_folder_callable(*self.op_args, **self.op_kwargs),
+                       'session_id': self.session_id,
+                       'participant_id': self.participant_id,
+                       'scan_date': self.scan_date,
+                       'task_id': self.task_id
+                       }
             if self.out:
-                dro.payload.spm_output = self.out.getvalue()
+                payload.spm_output = self.out.getvalue()
             if self.err:
-                dro.payload.spm_error = self.err.getvalue()
+                payload.spm_error = self.err.getvalue()
 
             session = settings.Session()
-            dbag = DagBag(os.path.expanduser(configuration.get('core', 'DAGS_FOLDER')))
+            dbag = DagBag(os.path.expanduser(
+                configuration.get('core', 'DAGS_FOLDER')))
             trigger_dag = dbag.get_dag(dag_id)
             dr = trigger_dag.create_dagrun(
-                run_id=dro.run_id,
+                run_id=run_id,
                 state=State.RUNNING,
-                conf=dro.payload,
+                conf=payload,
                 external_trigger=True)
             session.add(dr)
             session.commit()
