@@ -5,9 +5,10 @@
 .. moduleauthor:: Ludovic Claude <ludovic.claude@chuv.ch>
 """
 
-from airflow import configuration
+from airflow import configuration, settings
+from airflow.models import BaseOperator, DagBag
 from airflow.operators import PythonOperator
-from airflow.utils import apply_defaults
+from airflow.utils import State, apply_defaults
 from airflow.exceptions import AirflowSkipException
 from airflow_spm.errors import SPMError
 
@@ -205,7 +206,7 @@ class SpmPipelineOperator(PythonOperator):
                 dro.payload.spm_error = self.err.getvalue()
 
             session = settings.Session()
-            dbag = DagBag(os.path.expanduser(conf.get('core', 'DAGS_FOLDER')))
+            dbag = DagBag(os.path.expanduser(configuration.get('core', 'DAGS_FOLDER')))
             trigger_dag = dbag.get_dag(dag_id)
             dr = trigger_dag.create_dagrun(
                 run_id=dro.run_id,
