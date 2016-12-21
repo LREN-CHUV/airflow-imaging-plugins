@@ -39,7 +39,7 @@ class SpmPipelineOperator(PythonOperator):
 
     :param spm_function: Name of the SPM function to call.
         The SPM function should return 1.0 on success, 0.0 on failure
-    :type spm_function: string
+    :type spm_function: str
     :param spm_arguments_callable: A reference to an object that is callable.
         It should return a list of arguments to call on the SPM function.
     :type spm_arguments_callable: python callable
@@ -66,13 +66,19 @@ class SpmPipelineOperator(PythonOperator):
         Matlab scripts containing the function to execute and their dependencies
     :type matlab_paths: list
     :param parent_task: name of the parent task to use to locate XCom parameters
-    :type parent_task: string
+    :type parent_task: str
     :param validate_result_callable: A reference to a function that takes as arguments (return_value, task_id)
         and returns true if the result is valid.
     :type validate_result_callable: python callable
     :param output_folder_callable: A reference to an object that is callable.
         It should return the location of the output folder containing the results of the computation.
     :type output_folder_callable: python callable
+    :param on_skip_trigger_dag_id: The dag_id to trigger if this stage of the pipeline is skipped,
+        i.e. when validate_result_callable raises AirflowSkipException.
+    :type on_skip_trigger_dag_id: str
+    :param on_failure_trigger_dag_id: The dag_id to trigger if this stage of the pipeline has failed,
+        i.e. when validate_result_callable raises AirflowSkipException.
+    :type on_failure_trigger_dag_id: str
     """
     @apply_defaults
     def __init__(
@@ -88,6 +94,8 @@ class SpmPipelineOperator(PythonOperator):
             matlab_paths=None,
             validate_result_callable=default_validate_result,
             output_folder_callable=default_output_folder,
+            on_skip_trigger_dag_id=None,
+            on_failure_trigger_dag_id=None,
             *args, **kwargs):
         super(SpmPipelineOperator, self).__init__(python_callable=spm_arguments_callable,
                                                   op_args=op_args,
@@ -101,6 +109,8 @@ class SpmPipelineOperator(PythonOperator):
         self.matlab_paths = matlab_paths
         self.validate_result_callable = validate_result_callable
         self.output_folder_callable = output_folder_callable
+        self.on_skip_trigger_dag_id = on_skip_trigger_dag_id
+        self.on_failure_trigger_dag_id = on_failure_trigger_dag_id
 
     def pre_execute(self, context):
         spm_dir = str(configuration.get('spm', 'SPM_DIR'))
@@ -153,7 +163,13 @@ class SpmPipelineOperator(PythonOperator):
             self.engine = None
             logging.info("SPM returned %s", result_value)
 
-            self.validate_result_callable(result_value, context['ti'].task_id)
+            try:
+                self.validate_result_callable(
+                    result_value, context['ti'].task_id)
+            except AirflowSkipException:
+                self.trigger_dag(context, self.on_skip_trigger_dag_id)
+                raise AirflowSkipException
+
             return result_value
         else:
             msg = 'Matlab has not started on this node'
@@ -170,7 +186,35 @@ class SpmPipelineOperator(PythonOperator):
                 logging.info("SPM errors:")
                 logging.info(self.err.getvalue())
             logging.info("-----------")
-        super(SpmPipelineOperator, self).handle_failure(error, test_mode=False, context=None)
+        self.trigger_dag(context, self.on_failure_trigger_dag_id)
+        super(SpmPipelineOperator, self).handle_failure(
+            error, test_mode, context)
+
+    def trigger_dag(self, context, dag_id):
+        if dag_id:
+            dro = DagRunOrder(run_id='trig__' + datetime.now().isoformat())
+            dro.payload = {'folder': self.output_folder_callable(*self.op_args, **self.op_kwargs),
+                           'session_id': self.session_id,
+                           'participant_id': self.participant_id,
+                           'scan_date': self.scan_date,
+                           'task_id': self.task_id
+                           }
+            if self.out:
+                dro.payload.spm_output = self.out.getvalue()
+            if self.err:
+                dro.payload.spm_error = self.err.getvalue()
+
+            session = settings.Session()
+            dbag = DagBag(os.path.expanduser(conf.get('core', 'DAGS_FOLDER')))
+            trigger_dag = dbag.get_dag(dag_id)
+            dr = trigger_dag.create_dagrun(
+                run_id=dro.run_id,
+                state=State.RUNNING,
+                conf=dro.payload,
+                external_trigger=True)
+            session.add(dr)
+            session.commit()
+            session.close()
 
     def on_kill(self):
         if self.engine:
