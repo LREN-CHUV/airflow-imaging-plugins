@@ -205,9 +205,9 @@ class SpmPipelineOperator(PythonOperator):
                        'task_id': self.task_id
                        }
             if self.out:
-                payload.spm_output = self.out.getvalue()
+                payload['spm_output'] = self.out.getvalue()
             if self.err:
-                payload.spm_error = self.err.getvalue()
+                payload['spm_error'] = self.err.getvalue()
 
             session = settings.Session()
             dbag = DagBag(os.path.expanduser(
