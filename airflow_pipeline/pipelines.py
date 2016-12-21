@@ -3,13 +3,13 @@ from functools import partial
 
 def pipeline_trigger(parent_task):
     """
-      Use this function with TriggerDagOperator to always trigger a DAG and
+      Use this function with TriggerDagRunOperator to always trigger a DAG and
       pass pipeline information to the next DAG
     """
 
     def trigger(parent_task, context, dag_run_obj):
         """
-          Use this function with TriggerDagOperator to always trigger a DAG and
+          Use this function with TriggerDagRunOperator to always trigger a DAG and
           pass pipeline information to the next DAG
         """
         ti = context['task_instance']
