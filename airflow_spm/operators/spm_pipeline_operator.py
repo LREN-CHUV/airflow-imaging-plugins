@@ -8,7 +8,8 @@
 from airflow import configuration, settings
 from airflow.models import BaseOperator, DagBag
 from airflow.operators import PythonOperator
-from airflow.utils import State, apply_defaults
+from airflow.utils import apply_defaults
+from airflow.utils.state import State
 from airflow.exceptions import AirflowSkipException
 from airflow_spm.errors import SPMError
 
