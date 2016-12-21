@@ -5,6 +5,8 @@
 .. moduleauthor:: Ludovic Claude <ludovic.claude@chuv.ch>
 """
 
+from datetime import datetime
+
 from airflow import configuration, settings
 from airflow.models import BaseOperator, DagBag
 from airflow.operators import PythonOperator
@@ -13,6 +15,7 @@ from airflow.utils.state import State
 from airflow.exceptions import AirflowSkipException
 from airflow_spm.errors import SPMError
 
+import os
 import logging
 
 from io import StringIO
