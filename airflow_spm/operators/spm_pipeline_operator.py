@@ -8,7 +8,7 @@
 from datetime import datetime
 
 from airflow import configuration, settings
-from airflow.models import BaseOperator
+from airflow.models import BaseOperator, DagRun
 from airflow.operators import PythonOperator
 from airflow.utils import apply_defaults
 from airflow.utils.state import State
