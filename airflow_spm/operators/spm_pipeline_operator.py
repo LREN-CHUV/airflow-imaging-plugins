@@ -8,10 +8,9 @@
 from datetime import datetime
 
 from airflow import configuration, settings
-from airflow.models import BaseOperator, DagRun
+from airflow.models import DagRun
 from airflow.operators import PythonOperator
 from airflow.utils import apply_defaults
-from airflow.utils.state import State
 from airflow.exceptions import AirflowSkipException
 from airflow_spm.errors import SPMError
 from airflow_pipeline.pipelines import TransferPipelineXComs
