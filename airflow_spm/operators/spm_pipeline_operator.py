@@ -84,6 +84,8 @@ class SpmPipelineOperator(PythonOperator, TransferPipelineXComs):
         i.e. when validate_result_callable raises AirflowSkipException.
     :type on_failure_trigger_dag_id: str
     """
+    ui_color = '#c2560a'
+
     @apply_defaults
     def __init__(
             self,
@@ -149,6 +151,9 @@ class SpmPipelineOperator(PythonOperator, TransferPipelineXComs):
 
             self.engine.exit()
             self.engine = None
+            folder = self.output_folder_callable(*self.op_args, **self.op_kwargs)
+            payload['folder'] = folder
+            self.pipeline_xcoms['folder'] = folder
             self.write_pipeline_xcoms(context)
 
             logging.info("SPM returned %s", result_value)
@@ -191,9 +196,6 @@ class SpmPipelineOperator(PythonOperator, TransferPipelineXComs):
                 'spm_error': self.err.getvalue()
             }
             payload.update(self.pipeline_xcoms)
-            folder = self.output_folder_callable(*self.op_args, **self.op_kwargs)
-            payload['folder'] = folder
-            self.pipeline_xcoms['folder'] = folder
 
             session = settings.Session()
             dr = DagRun(
