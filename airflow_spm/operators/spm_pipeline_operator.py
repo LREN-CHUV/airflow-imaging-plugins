@@ -8,14 +8,13 @@
 from datetime import datetime
 
 from airflow import configuration, settings
-from airflow.models import BaseOperator, DagBag
+from airflow.models import BaseOperator
 from airflow.operators import PythonOperator
 from airflow.utils import apply_defaults
 from airflow.utils.state import State
 from airflow.exceptions import AirflowSkipException
 from airflow_spm.errors import SPMError
 
-import os
 import logging
 
 from io import StringIO
@@ -210,12 +209,9 @@ class SpmPipelineOperator(PythonOperator):
                 payload['spm_error'] = self.err.getvalue()
 
             session = settings.Session()
-            dbag = DagBag(os.path.expanduser(
-                configuration.get('core', 'DAGS_FOLDER')))
-            trigger_dag = dbag.get_dag(dag_id)
-            dr = trigger_dag.create_dagrun(
+            dr = DagRun(
+                dag_id=dag_id,
                 run_id=run_id,
-                state=State.RUNNING,
                 conf=payload,
                 external_trigger=True)
             session.add(dr)
