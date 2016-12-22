@@ -34,7 +34,7 @@ class TransferPipelineXComs(object):
             value = self.xcom_pull(context, task_ids=self.parent_task, key=xcom)
             if value:
                 self.pipeline_xcoms[xcom] = value
-            else if xcom in expected:
+            elif xcom in expected:
                 logging.warning("xcom argument '%s' is empty" % xcom)
 
     def write_pipeline_xcoms(self, context):
