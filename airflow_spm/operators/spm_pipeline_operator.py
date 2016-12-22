@@ -181,15 +181,12 @@ class SpmPipelineOperator(PythonOperator):
             raise SPMError(msg)
 
     def handle_failure(self, error, test_mode=False, context=None):
-        if self.out or self.err:
-            logging.info("-----------")
-            if self.out:
-                logging.info("SPM output:")
-                logging.info(self.out.getvalue())
-            if self.err:
-                logging.info("SPM errors:")
-                logging.info(self.err.getvalue())
-            logging.info("-----------")
+        logging.error("-----------")
+        logging.error("SPM output:")
+        logging.error(self.out.getvalue())
+        logging.error("SPM errors:")
+        logging.error(self.err.getvalue())
+        logging.error("-----------")
         self.trigger_dag(context, self.on_failure_trigger_dag_id)
         super(SpmPipelineOperator, self).handle_failure(
             error, test_mode, context)
@@ -201,12 +198,10 @@ class SpmPipelineOperator(PythonOperator):
                        'session_id': self.session_id,
                        'participant_id': self.participant_id,
                        'scan_date': self.scan_date,
-                       'task_id': self.task_id
+                       'task_id': self.task_id,
+                       'spm_output': self.out.getvalue(),
+                       'spm_error': self.err.getvalue()
                        }
-            if self.out:
-                payload['spm_output'] = self.out.getvalue()
-            if self.err:
-                payload['spm_error'] = self.err.getvalue()
 
             session = settings.Session()
             dr = DagRun(
