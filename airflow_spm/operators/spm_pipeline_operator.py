@@ -151,9 +151,7 @@ class SpmPipelineOperator(PythonOperator, TransferPipelineXComs):
 
             self.engine.exit()
             self.engine = None
-            folder = self.output_folder_callable(*self.op_args, **self.op_kwargs)
-            payload['folder'] = folder
-            self.pipeline_xcoms['folder'] = folder
+            self.pipeline_xcoms['folder'] = self.output_folder_callable(*self.op_args, **self.op_kwargs)
             self.write_pipeline_xcoms(context)
 
             logging.info("SPM returned %s", result_value)
