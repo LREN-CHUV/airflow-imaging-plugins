@@ -1,13 +1,11 @@
 
-from functools import partial
-
 def pipeline_trigger(parent_task):
     """
       Use this function with TriggerDagRunOperator to always trigger a DAG and
       pass pipeline information to the next DAG
     """
 
-    def trigger(parent_task, context, dag_run_obj):
+    def trigger(context, dag_run_obj):
         """
           Use this function with TriggerDagRunOperator to always trigger a DAG and
           pass pipeline information to the next DAG
@@ -19,4 +17,4 @@ def pipeline_trigger(parent_task):
             dag_run_obj.payload[key] = ti.xcom_pull(task_ids=parent_task, key=key) | dr.conf[key] | None
         return dag_run_obj
 
-    return partial(trigger, parent_task=parent_task)
+    return trigger
