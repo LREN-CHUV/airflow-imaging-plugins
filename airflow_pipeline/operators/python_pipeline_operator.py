@@ -91,7 +91,7 @@ class PythonPipelineOperator(PythonOperator):
         return_value = self.python_callable(*self.op_args, **self.op_kwargs)
         logging.info("Done. Returned value was: " + str(return_value))
 
-        if isinstance(return_value, dict):
+        if isinstance(return_value, dict) or isinstance(return_value, set):
             for k in ['folder', 'participant_id', 'scan_date', 'dataset']:
                 if k in return_value:
                     self.__setattr__(k, return_value[k])
