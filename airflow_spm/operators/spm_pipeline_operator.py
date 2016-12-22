@@ -133,6 +133,7 @@ class SpmPipelineOperator(PythonOperator, TransferPipelineXComs):
             logging.error(msg)
             raise SPMError(msg)
         self.read_pipeline_xcoms(context)
+        self.pipeline_xcoms['task_id'] = self.task_id
         self.op_kwargs.update(self.pipeline_xcoms)
         self.out = StringIO()
         self.err = StringIO()
