@@ -14,6 +14,7 @@ from airflow.utils import apply_defaults
 from airflow.utils.state import State
 from airflow.exceptions import AirflowSkipException
 from airflow_spm.errors import SPMError
+from airflow_pipeline.pipelines import TransferPipelineXComs
 
 import logging
 
@@ -36,7 +37,7 @@ def default_output_folder(folder):
     return folder
 
 
-class SpmPipelineOperator(PythonOperator):
+class SpmPipelineOperator(PythonOperator, TransferPipelineXComs):
 
     """
     Executes a pipeline on SPM, where a 'pipeline' is a function implemented in SPM.
@@ -101,15 +102,17 @@ class SpmPipelineOperator(PythonOperator):
             on_skip_trigger_dag_id=None,
             on_failure_trigger_dag_id=None,
             *args, **kwargs):
-        super(SpmPipelineOperator, self).__init__(python_callable=spm_arguments_callable,
-                                                  op_args=op_args,
-                                                  op_kwargs=op_kwargs,
-                                                  provide_context=provide_context,
-                                                  templates_dict=templates_dict,
-                                                  templates_exts=templates_exts,
-                                                  *args, **kwargs)
+        PythonOperator.__init__(self,
+                                python_callable=spm_arguments_callable,
+                                op_args=op_args,
+                                op_kwargs=op_kwargs,
+                                provide_context=provide_context,
+                                templates_dict=templates_dict,
+                                templates_exts=templates_exts,
+                                *args, **kwargs)
+        TransferPipelineXComs.__init__(self, parent_task)
+
         self.spm_function = spm_function
-        self.parent_task = parent_task
         self.matlab_paths = matlab_paths
         self.validate_result_callable = validate_result_callable
         self.output_folder_callable = output_folder_callable
@@ -129,34 +132,10 @@ class SpmPipelineOperator(PythonOperator):
             msg = 'Matlab has not started on this node'
             logging.error(msg)
             raise SPMError(msg)
-        ti = context['ti']
-        self.folder = ti.xcom_pull(
-            key='folder', task_ids=self.parent_task)
-        if not self.folder:
-            logging.warning("xcom argument 'folder' is empty")
-        self.session_id = ti.xcom_pull(
-            key='session_id', task_ids=self.parent_task)
-        if not self.folder:
-            logging.warning("xcom argument 'session_id' is empty")
-        self.participant_id = ti.xcom_pull(
-            key='participant_id', task_ids=self.parent_task)
-        if not self.folder:
-            logging.warning("xcom argument 'participant_id' is empty")
-        self.scan_date = ti.xcom_pull(
-            key='scan_date', task_ids=self.parent_task)
-        if not self.folder:
-            logging.warning("xcom argument 'scan_date' is empty")
-        self.dataset = ti.xcom_pull(
-            key='dataset', task_ids=self.parent_task)
-        if not self.dataset:
-            logging.warning("xcom argument 'dataset' is empty")
+        self.read_pipeline_xcoms(context)
+        self.op_kwargs.update(self.pipeline_xcoms)
         self.out = StringIO()
         self.err = StringIO()
-        self.op_kwargs['folder'] = self.folder
-        self.op_kwargs['session_id'] = self.session_id
-        self.op_kwargs['participant_id'] = self.participant_id
-        self.op_kwargs['scan_date'] = self.scan_date
-        self.op_kwargs['dataset'] = self.dataset
 
     def execute(self, context):
         if self.engine:
@@ -170,7 +149,15 @@ class SpmPipelineOperator(PythonOperator):
 
             self.engine.exit()
             self.engine = None
+            self.write_pipeline_xcoms(context)
+
             logging.info("SPM returned %s", result_value)
+            logging.info("-----------")
+            logging.info("SPM output:")
+            logging.info(self.out.getvalue())
+            logging.info("SPM errors:")
+            logging.info(self.err.getvalue())
+            logging.info("-----------")
 
             try:
                 self.validate_result_callable(
@@ -199,15 +186,13 @@ class SpmPipelineOperator(PythonOperator):
     def trigger_dag(self, context, dag_id):
         if dag_id:
             run_id = 'trig__' + datetime.now().isoformat()
-            payload = {'folder': self.output_folder_callable(*self.op_args, **self.op_kwargs),
-                       'session_id': self.session_id,
-                       'participant_id': self.participant_id,
-                       'scan_date': self.scan_date,
-                       'task_id': self.task_id,
-                       'dataset': self.dataset,
-                       'spm_output': self.out.getvalue(),
-                       'spm_error': self.err.getvalue()
-                       }
+            payload = {
+                'spm_output': self.out.getvalue(),
+                'spm_error': self.err.getvalue()
+            }
+            payload.update(self.pipeline_xcoms)
+            payload['folder'] = self.output_folder_callable(
+                *self.op_args, **self.op_kwargs)
 
             session = settings.Session()
             dr = DagRun(
@@ -228,18 +213,3 @@ class SpmPipelineOperator(PythonOperator):
         if self.engine:
             self.engine.exit()
             self.engine = None
-
-        logging.info("-----------")
-        logging.info("SPM output:")
-        logging.info(self.out.getvalue())
-        logging.info("SPM errors:")
-        logging.info(self.err.getvalue())
-        logging.info("-----------")
-
-        ti = context['ti']
-        ti.xcom_push(key='folder', value=self.output_folder_callable(
-            *self.op_args, **self.op_kwargs))
-        ti.xcom_push(key='session_id', value=self.session_id)
-        ti.xcom_push(key='participant_id', value=self.participant_id)
-        ti.xcom_push(key='scan_date', value=self.scan_date)
-        ti.xcom_push(key='dataset', value=self.dataset)

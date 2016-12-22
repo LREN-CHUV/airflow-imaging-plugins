@@ -7,11 +7,12 @@
 
 from airflow.operators import PythonOperator
 from airflow.utils import apply_defaults
+from airflow_pipeline.pipelines import TransferPipelineXComs
 
 import logging
 
 
-class PythonPipelineOperator(PythonOperator):
+class PythonPipelineOperator(PythonOperator, TransferPipelineXComs):
     """
     A PythonOperator that moves XCOM data used by the pipeline.
 
@@ -52,56 +53,34 @@ class PythonPipelineOperator(PythonOperator):
             templates_exts=None,
             parent_task=None,
             *args, **kwargs):
-        super().__init__(python_callable=python_callable,
-                         op_args=op_args,
-                         op_kwargs=op_kwargs,
-                         provide_context=provide_context,
-                         templates_dict=templates_dict,
-                         templates_exts=templates_exts,
-                         *args, **kwargs)
-        self.parent_task = parent_task
+        PythonOperator.__init__(self,
+                                python_callable=python_callable,
+                                op_args=op_args,
+                                op_kwargs=op_kwargs,
+                                provide_context=provide_context,
+                                templates_dict=templates_dict,
+                                templates_exts=templates_exts,
+                                *args, **kwargs)
+        TransferPipelineXComs.__init__(self, parent_task)
 
     def pre_execute(self, context):
-        self.folder = self.xcom_pull(
-            context, task_ids=self.parent_task, key='folder')
-        self.session_id = self.xcom_pull(
-            context, task_ids=self.parent_task, key='session_id')
-        if not self.session_id:
+        self.read_pipeline_xcoms(context)
+        if not 'session_id' in self.pipeline_xcoms:
             dr = context['dag_run']
-            self.session_id = dr.conf['session_id']
-
-        self.participant_id = self.xcom_pull(
-            context, task_ids=self.parent_task, key='participant_id')
-        self.scan_date = self.xcom_pull(
-            context, task_ids=self.parent_task, key='scan_date')
-        self.dataset = self.xcom_pull(
-            context, task_ids=self.parent_task, key='dataset')
+            self.pipeline_xcoms['session_id'] = dr.conf['session_id']
 
     def execute(self, context):
         if self.provide_context:
             context.update(self.op_kwargs)
-            context['templates_dict'] = self.templates_dict
-            context['folder'] = self.folder
-            context['session_id'] = self.session_id
-            context['participant_id'] = self.participant_id
-            context['scan_date'] = self.scan_date
-            context['dataset'] = self.dataset
+            context.update(self.pipeline_xcoms)
             self.op_kwargs = context
 
         return_value = self.python_callable(*self.op_args, **self.op_kwargs)
         logging.info("Done. Returned value was: " + str(return_value))
 
-        if isinstance(return_value, dict) or isinstance(return_value, set):
-            for k in ['folder', 'participant_id', 'scan_date', 'dataset']:
-                if k in return_value:
-                    self.__setattr__(k, return_value[k])
+        if isinstance(return_value, dict):
+            self.pipeline_xcoms.update(return_value)
+
+        self.write_pipeline_xcoms(context)
 
         return return_value
-
-    def post_execute(self, context):
-        self.xcom_push(context, key='folder', value=self.folder)
-        self.xcom_push(context, key='session_id', value=self.session_id)
-        self.xcom_push(context, key='participant_id',
-                       value=self.participant_id)
-        self.xcom_push(context, key='scan_date', value=self.scan_date)
-        self.xcom_push(context, key='dataset', value=self.dataset)
