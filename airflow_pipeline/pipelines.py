@@ -1,3 +1,4 @@
+import logging
 
 PIPELINE_XCOMS = ['folder', 'session_id', 'participant_id', 'scan_date', 'spm_output', 'spm_error', 'dataset']
 
@@ -28,11 +29,13 @@ class TransferPipelineXComs(object):
         self.parent_task = parent_task
         self.pipeline_xcoms = {}
 
-    def read_pipeline_xcoms(self, context):
+    def read_pipeline_xcoms(self, context, expected = []):
         for xcom in PIPELINE_XCOMS:
             value = self.xcom_pull(context, task_ids=self.parent_task, key=xcom)
             if value:
                 self.pipeline_xcoms[xcom] = value
+            else if xcom in expected:
+                logging.warning("xcom argument '%s' is empty" % xcom)
 
     def write_pipeline_xcoms(self, context):
         for key,value in self.pipeline_xcoms.items():

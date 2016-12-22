@@ -132,7 +132,7 @@ class SpmPipelineOperator(PythonOperator, TransferPipelineXComs):
             msg = 'Matlab has not started on this node'
             logging.error(msg)
             raise SPMError(msg)
-        self.read_pipeline_xcoms(context)
+        self.read_pipeline_xcoms(context, expected = ['folder', 'session_id', 'participant_id', 'scan_date', 'dataset'])
         self.pipeline_xcoms['task_id'] = self.task_id
         self.op_kwargs.update(self.pipeline_xcoms)
         self.out = StringIO()
@@ -192,8 +192,9 @@ class SpmPipelineOperator(PythonOperator, TransferPipelineXComs):
                 'spm_error': self.err.getvalue()
             }
             payload.update(self.pipeline_xcoms)
-            payload['folder'] = self.output_folder_callable(
-                *self.op_args, **self.op_kwargs)
+            folder = self.output_folder_callable(*self.op_args, **self.op_kwargs)
+            payload['folder'] = folder
+            self.pipeline_xcoms['folder'] = folder
 
             session = settings.Session()
             dr = DagRun(
