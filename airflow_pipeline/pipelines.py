@@ -34,7 +34,8 @@ class TransferPipelineXComs(object):
         self.parent_task = parent_task
         self.pipeline_xcoms = {}
 
-    def read_pipeline_xcoms(self, context, expected=[]):
+    def read_pipeline_xcoms(self, context, expected=None):
+        expected = expected or []
         for xcom in PIPELINE_XCOMS:
             value = self.xcom_pull(
                 context, task_ids=self.parent_task, key=xcom)
