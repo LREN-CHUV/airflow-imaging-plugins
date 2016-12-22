@@ -70,6 +70,8 @@ class ScanFolderOperator(BaseOperator):
         to your tasks while executing that DAG run. Your function header
         should look like ``def foo(context, dag_run_obj):``
     :type python_callable: python callable
+    :param dataset: name of the dataset
+    :type dataset: str
     """
     template_fields = tuple()
     template_ext = tuple()
@@ -84,6 +86,7 @@ class ScanFolderOperator(BaseOperator):
             is_valid_session_id=default_is_valid_session_id,
             look_for_ready_file_marker=default_look_for_ready_file_marker,
             ready_file_marker='.ready',
+            dataset=None,
             *args, **kwargs):
         super(ScanFolderOperator, self).__init__(*args, **kwargs)
         self.folder = folder
@@ -92,6 +95,7 @@ class ScanFolderOperator(BaseOperator):
         self.is_valid_session_id = is_valid_session_id
         self.look_for_ready_file_marker = look_for_ready_file_marker
         self.ready_file_marker = ready_file_marker
+        self.dataset = dataset
 
     def execute(self, context):
         self.scan_dirs(self.folder, context)
@@ -134,6 +138,7 @@ class ScanFolderOperator(BaseOperator):
         # Session ID identifies the session for a scan. The
         # last part of the folder path should match session_id
         context_params['session_id'] = session_dir_name
+        context_params['dataset'] = self.dataset
 
         session = settings.Session()
         while True:

@@ -146,12 +146,17 @@ class SpmPipelineOperator(PythonOperator):
             key='scan_date', task_ids=self.parent_task)
         if not self.folder:
             logging.warning("xcom argument 'scan_date' is empty")
+        self.dataset = ti.xcom_pull(
+            key='dataset', task_ids=self.parent_task)
+        if not self.dataset:
+            logging.warning("xcom argument 'dataset' is empty")
         self.out = StringIO()
         self.err = StringIO()
         self.op_kwargs['folder'] = self.folder
         self.op_kwargs['session_id'] = self.session_id
         self.op_kwargs['participant_id'] = self.participant_id
         self.op_kwargs['scan_date'] = self.scan_date
+        self.op_kwargs['dataset'] = self.dataset
 
     def execute(self, context):
         if self.engine:
@@ -199,6 +204,7 @@ class SpmPipelineOperator(PythonOperator):
                        'participant_id': self.participant_id,
                        'scan_date': self.scan_date,
                        'task_id': self.task_id,
+                       'dataset': self.dataset,
                        'spm_output': self.out.getvalue(),
                        'spm_error': self.err.getvalue()
                        }
@@ -236,3 +242,4 @@ class SpmPipelineOperator(PythonOperator):
         ti.xcom_push(key='session_id', value=self.session_id)
         ti.xcom_push(key='participant_id', value=self.participant_id)
         ti.xcom_push(key='scan_date', value=self.scan_date)
+        ti.xcom_push(key='dataset', value=self.dataset)

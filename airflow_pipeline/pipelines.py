@@ -13,7 +13,7 @@ def pipeline_trigger(parent_task):
         ti = context['task_instance']
         dr = context['dag_run']
         dag_run_obj.payload = {}
-        for key in ['folder', 'session_id', 'participant_id', 'scan_date', 'spm_output', 'spm_error']:
+        for key in ['folder', 'session_id', 'participant_id', 'scan_date', 'spm_output', 'spm_error', 'dataset']:
             dag_run_obj.payload[key] = ti.xcom_pull(task_ids=parent_task, key=key) or dr.conf[key] or None
         return dag_run_obj
 

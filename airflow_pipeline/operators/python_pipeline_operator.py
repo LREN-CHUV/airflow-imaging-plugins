@@ -74,6 +74,8 @@ class PythonPipelineOperator(PythonOperator):
             context, task_ids=self.parent_task, key='participant_id')
         self.scan_date = self.xcom_pull(
             context, task_ids=self.parent_task, key='scan_date')
+        self.dataset = self.xcom_pull(
+            context, task_ids=self.parent_task, key='dataset')
 
     def execute(self, context):
         if self.provide_context:
@@ -83,13 +85,14 @@ class PythonPipelineOperator(PythonOperator):
             context['session_id'] = self.session_id
             context['participant_id'] = self.participant_id
             context['scan_date'] = self.scan_date
+            context['dataset'] = self.dataset
             self.op_kwargs = context
 
         return_value = self.python_callable(*self.op_args, **self.op_kwargs)
         logging.info("Done. Returned value was: " + str(return_value))
 
         if isinstance(return_value, dict):
-            for k in ['folder', 'participant_id', 'scan_date']:
+            for k in ['folder', 'participant_id', 'scan_date', 'dataset']:
                 if k in return_value:
                     self.__setattr__(k, return_value[k])
 
@@ -101,3 +104,4 @@ class PythonPipelineOperator(PythonOperator):
         self.xcom_push(context, key='participant_id',
                        value=self.participant_id)
         self.xcom_push(context, key='scan_date', value=self.scan_date)
+        self.xcom_push(context, key='dataset', value=self.dataset)
