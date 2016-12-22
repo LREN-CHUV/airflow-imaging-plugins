@@ -23,7 +23,7 @@ def pipeline_trigger(parent_task):
 
     return trigger
 
-class TransferPipelineXComs(Object):
+class TransferPipelineXComs(object):
     def __init__(parent_task):
         self.parent_task = parent_task
         self.pipeline_xcoms = {}
