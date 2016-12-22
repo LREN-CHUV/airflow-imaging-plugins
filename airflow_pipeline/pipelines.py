@@ -24,16 +24,16 @@ def pipeline_trigger(parent_task):
     return trigger
 
 class TransferPipelineXComs(object):
-    def __init__(parent_task):
+    def __init__(self, parent_task):
         self.parent_task = parent_task
         self.pipeline_xcoms = {}
 
-    def read_pipeline_xcoms(context):
+    def read_pipeline_xcoms(self, context):
         for xcom in PIPELINE_XCOMS:
             value = self.xcom_pull(context, task_ids=self.parent_task, key=xcom)
             if value:
                 self.pipeline_xcoms[xcom] = value
 
-    def write_pipeline_xcoms(context):
+    def write_pipeline_xcoms(self, context):
         for key,value in self.pipeline_xcoms.items():
             self.xcom_push(context, key=key, value=value)
