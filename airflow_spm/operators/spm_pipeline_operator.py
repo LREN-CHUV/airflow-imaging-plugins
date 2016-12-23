@@ -9,7 +9,10 @@ from datetime import datetime
 
 from airflow import configuration, settings
 from airflow.models import DagRun
-from airflow.operators import PythonOperator
+try:
+    from airflow.operators import PythonOperator
+except ImportError:
+    from airflow.operators.python_operator import PythonOperator
 from airflow.utils import apply_defaults
 from airflow.exceptions import AirflowSkipException
 from airflow_spm.errors import SPMError
@@ -119,6 +122,9 @@ class SpmPipelineOperator(PythonOperator, TransferPipelineXComs):
         self.output_folder_callable = output_folder_callable
         self.on_skip_trigger_dag_id = on_skip_trigger_dag_id
         self.on_failure_trigger_dag_id = on_failure_trigger_dag_id
+        self.engine = None
+        self.out = None
+        self.err = None
 
     def pre_execute(self, context):
         spm_dir = str(configuration.get('spm', 'SPM_DIR'))

@@ -5,7 +5,10 @@
 .. moduleauthor:: Ludovic Claude <ludovic.claude@chuv.ch>
 """
 
-from airflow.operators import PythonOperator
+try:
+    from airflow.operators import PythonOperator
+except ImportError:
+    from airflow.operators.python_operator import PythonOperator
 from airflow.utils import apply_defaults
 from airflow_pipeline.pipelines import TransferPipelineXComs
 
@@ -53,6 +56,7 @@ class PythonPipelineOperator(PythonOperator, TransferPipelineXComs):
             templates_exts=None,
             parent_task=None,
             *args, **kwargs):
+
         PythonOperator.__init__(self,
                                 python_callable=python_callable,
                                 op_args=op_args,
@@ -62,10 +66,11 @@ class PythonPipelineOperator(PythonOperator, TransferPipelineXComs):
                                 templates_exts=templates_exts,
                                 *args, **kwargs)
         TransferPipelineXComs.__init__(self, parent_task)
+        self.op_kwargs = None
 
     def pre_execute(self, context):
         self.read_pipeline_xcoms(context)
-        if not 'session_id' in self.pipeline_xcoms:
+        if 'session_id' not in self.pipeline_xcoms:
             dr = context['dag_run']
             self.pipeline_xcoms['session_id'] = dr.conf['session_id']
 
