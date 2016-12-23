@@ -146,12 +146,26 @@ class SpmPipelineOperator(PythonOperator, TransferPipelineXComs):
             logging.info("Calling engine.%s(%s)" %
                          (self.spm_function, ','.join(map(str, params))))
 
-            result_value = getattr(self.engine, self.spm_function)(
-                stdout=self.out, stderr=self.err, *params)
+            try:
+                result_value = getattr(self.engine, self.spm_function)(
+                    stdout=self.out, stderr=self.err, *params)
 
-            self.engine.exit()
-            self.engine = None
+                self.engine.exit()
+                self.engine = None
+            except Exception:
+                logging.error("SPM failed and returned %s", result_value)
+                logging.error("-----------")
+                logging.error("SPM output:")
+                logging.error(self.out.getvalue())
+                logging.error("SPM errors:")
+                logging.error(self.err.getvalue())
+                logging.error("-----------")
+                self.trigger_dag(context, self.on_failure_trigger_dag_id)
+                raise
+
             self.pipeline_xcoms['folder'] = self.output_folder_callable(*self.op_args, **self.op_kwargs)
+            self.pipeline_xcoms['spm_output'] = self.out.getvalue()
+            self.pipeline_xcoms['spm_error'] = self.err.getvalue()
             self.write_pipeline_xcoms(context)
 
             logging.info("SPM returned %s", result_value)
@@ -167,24 +181,16 @@ class SpmPipelineOperator(PythonOperator, TransferPipelineXComs):
                     result_value, context['ti'].task_id)
             except AirflowSkipException:
                 self.trigger_dag(context, self.on_skip_trigger_dag_id)
-                raise AirflowSkipException
+                raise
+            except Exception:
+                self.trigger_dag(context, self.on_failure_trigger_dag_id)
+                raise
 
             return result_value
         else:
             msg = 'Matlab has not started on this node'
             logging.error(msg)
             raise SPMError(msg)
-
-    def handle_failure(self, error, test_mode=False, context=None):
-        logging.error("-----------")
-        logging.error("SPM output:")
-        logging.error(self.out.getvalue())
-        logging.error("SPM errors:")
-        logging.error(self.err.getvalue())
-        logging.error("-----------")
-        self.trigger_dag(context, self.on_failure_trigger_dag_id)
-        super(SpmPipelineOperator, self).handle_failure(
-            error, test_mode, context)
 
     def trigger_dag(self, context, dag_id):
         if dag_id:
