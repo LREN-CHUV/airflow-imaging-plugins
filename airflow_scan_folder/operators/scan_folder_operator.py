@@ -21,7 +21,7 @@ def default_is_valid_session_id(session_id):
     return not ('delete' in sid) and not ('phantom' in sid)
 
 
-def default_look_for_ready_file_marker(daily_folder_date):
+def default_look_for_ready_marker_file(daily_folder_date):
     return daily_folder_date.date() == datetime.today().date()
 
 
@@ -57,7 +57,7 @@ def roundUpTime(dt=None, dateDelta=timedelta(minutes=1)):
 class ScanFolderOperator(BaseOperator):
     """
     Triggers a DAG run for a specified ``dag_id`` for each scan folder discovered
-    in a daily folder
+    in a parent folder
 
     :param trigger_dag_id: the dag_id to trigger
     :type trigger_dag_id: str
@@ -71,12 +71,16 @@ class ScanFolderOperator(BaseOperator):
         to your tasks while executing that DAG run. Your function header
         should look like ``def foo(context, dag_run_obj):``
     :type python_callable: python callable
+    :param is_valid_session_id: a reference to a python function that will be
+        called while passing it the ``session_id`` string and return True if
+        the session is valid, False otherwise
+    :type is_valid_session_id: python callable
     :param dataset: name of the dataset
     :type dataset: str
     """
     template_fields = tuple()
     template_ext = tuple()
-    ui_color = '#bbefeb'
+    ui_color = '#cceeeb'
 
     @apply_defaults
     def __init__(
@@ -85,8 +89,6 @@ class ScanFolderOperator(BaseOperator):
             trigger_dag_id,
             python_callable=default_trigger_dagrun,
             is_valid_session_id=default_is_valid_session_id,
-            look_for_ready_file_marker=default_look_for_ready_file_marker,
-            ready_file_marker='.ready',
             dataset=None,
             *args, **kwargs):
         super(ScanFolderOperator, self).__init__(*args, **kwargs)
@@ -94,44 +96,28 @@ class ScanFolderOperator(BaseOperator):
         self.python_callable = python_callable
         self.trigger_dag_id = trigger_dag_id
         self.is_valid_session_id = is_valid_session_id
-        self.look_for_ready_file_marker = look_for_ready_file_marker
-        self.ready_file_marker = ready_file_marker
         self.dataset = dataset
+        self.offset = -1
 
     def execute(self, context):
         self.scan_dirs(self.folder, context)
 
     def scan_dirs(self, folder, context):
-        daily_folder_date = context['execution_date']
-        offset = -1
-
         if not os.path.exists(folder):
             raise AirflowSkipException
 
-        daily_folder = os.path.join(folder, daily_folder_date.strftime(
-            '%Y'), daily_folder_date.strftime('%Y%m%d'))
-
-        if not os.path.isdir(daily_folder):
-            daily_folder = os.path.join(
-                folder, '2014', daily_folder_date.strftime('%Y%m%d'))
-
-        if not os.path.isdir(daily_folder):
-            raise AirflowSkipException
-
-        for fname in os.listdir(daily_folder):
-            path = os.path.join(daily_folder, fname)
+        for fname in os.listdir(folder):
+            path = os.path.join(folder, fname)
             if os.path.isdir(path):
-
-                ready_file_marker = os.path.join(path, self.ready_file_marker)
-                if self.is_valid_session_id(fname) and not self.look_for_ready_file_marker(daily_folder_date) or os.access(ready_file_marker, os.R_OK):
+                if self.is_valid_session_id(fname):
 
                     logging.info(
                         'Prepare trigger for preprocessing : %s', str(fname))
 
-                    self.trigger_dag_run(context, path, fname, offset)
-                    offset = offset - 1
+                    self.trigger_dag_run(context, path, fname)
+                    self.offset = self.offset - 1
 
-    def trigger_dag_run(self, context, path, session_dir_name, offset):
+    def trigger_dag_run(self, context, path, session_dir_name):
         context = copy.copy(context)
         context_params = context['params']
         # Folder containing the DICOM files to process
@@ -143,13 +129,14 @@ class ScanFolderOperator(BaseOperator):
 
         session = settings.Session()
         while True:
-            dr_time = roundUpTime(dateDelta=timedelta(minutes=offset))
+            dr_time = roundUpTime(dateDelta=timedelta(minutes=self.offset))
             run_id = "trig__{0}".format(dr_time.isoformat())
             dr = session.query(DagRun).filter(
                 DagRun.dag_id == self.trigger_dag_id, DagRun.run_id == run_id).first()
             if dr:
-                # Try to avoid too many collisions when backfilling a long backlog
-                offset = offset - random.randint(1, 100)
+                # Try to avoid too many collisions when backfilling a long
+                # backlog
+                self.offset = self.offset - random.randint(1, 100)
             else:
                 break
 
@@ -177,10 +164,92 @@ class ScanFolderOperator(BaseOperator):
                     session.rollback()
                     session.close()
                     session = None
-                    # Retry, while attempting to avoid too many collisions when backfilling a long backlog
-                    self.trigger_dag_run(context, path, session_dir_name, offset - random.randint(1, 10000))
+                    # Retry, while attempting to avoid too many collisions when
+                    # backfilling a long backlog
+                    self.offset = self.offset - random.randint(1, 10000)
+                    self.trigger_dag_run(context, path, session_dir_name)
             else:
                 logging.info("Criteria not met, moving on")
         finally:
             if session:
                 session.close()
+
+
+class ScanDailyFolderOperator(ScanFolderOperator):
+    """
+    Triggers a DAG run for a specified ``dag_id`` for each scan folder discovered
+    in a daily folder. The day is related to the ``execution_date`` given in the context
+    of the DAG.
+
+    :param trigger_dag_id: the dag_id to trigger
+    :type trigger_dag_id: str
+    :param python_callable: a reference to a python function that will be
+        called while passing it the ``context`` object and a placeholder
+        object ``obj`` for your callable to fill and return if you want
+        a DagRun created. This ``obj`` object contains a ``run_id`` and
+        ``payload`` attribute that you can modify in your function.
+        The ``run_id`` should be a unique identifier for that DAG run, and
+        the payload has to be a picklable object that will be made available
+        to your tasks while executing that DAG run. Your function header
+        should look like ``def foo(context, dag_run_obj):``
+    :type python_callable: python callable
+    :param is_valid_session_id: a reference to a python function that will be
+        called while passing it the ``session_id`` string and return True if
+        the session is valid, False otherwise
+    :type is_valid_session_id: python callable
+    :param look_for_ready_marker_file: a reference to a python function that will be
+        called while passing it a date and return True if we need to look for the
+        ``ready`` marker file to ensure that file creation and copy operations are complete,
+        False otherwise
+    :type look_for_ready_marker_file: python callable
+    :param dataset: name of the dataset
+    :type dataset: str
+    """
+    template_fields = tuple()
+    template_ext = tuple()
+    ui_color = '#bbefeb'
+
+    @apply_defaults
+    def __init__(
+            self,
+            folder,
+            trigger_dag_id,
+            python_callable=default_trigger_dagrun,
+            is_valid_session_id=default_is_valid_session_id,
+            look_for_ready_marker_file=default_look_for_ready_marker_file,
+            ready_marker_file='.ready',
+            dataset=None,
+            *args, **kwargs):
+        super(ScanFolderOperator, self).__init__(folder=folder, trigger_dag_id=trigger_dag_id,
+                                                 python_callable=python_callable, is_valid_session_id=is_valid_session_id, dataset=dataset, *args, **kwargs)
+        self.look_for_ready_marker_file = look_for_ready_marker_file
+        self.ready_marker_file = ready_marker_file
+
+    def scan_dirs(self, folder, context):
+        daily_folder_date = context['execution_date']
+
+        if not os.path.exists(folder):
+            raise AirflowSkipException
+
+        daily_folder = os.path.join(folder, daily_folder_date.strftime(
+            '%Y'), daily_folder_date.strftime('%Y%m%d'))
+
+        if not os.path.isdir(daily_folder):
+            daily_folder = os.path.join(
+                folder, '2014', daily_folder_date.strftime('%Y%m%d'))
+
+        if not os.path.isdir(daily_folder):
+            raise AirflowSkipException
+
+        for fname in os.listdir(daily_folder):
+            path = os.path.join(daily_folder, fname)
+            if os.path.isdir(path):
+
+                ready_marker_file = os.path.join(path, self.ready_marker_file)
+                if self.is_valid_session_id(fname) and not self.look_for_ready_marker_file(daily_folder_date) or os.access(ready_marker_file, os.R_OK):
+
+                    logging.info(
+                        'Prepare trigger for preprocessing : %s', str(fname))
+
+                    self.trigger_dag_run(context, path, fname)
+                    self.offset = self.offset - 1
