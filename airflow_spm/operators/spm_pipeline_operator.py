@@ -20,6 +20,7 @@ from airflow_pipeline.pipelines import TransferPipelineXComs
 
 import logging
 
+from shutil import rmtree
 from io import StringIO
 
 try:
@@ -148,6 +149,7 @@ class SpmPipelineOperator(PythonOperator, TransferPipelineXComs):
     def execute(self, context):
         if self.engine:
             params = super(SpmPipelineOperator, self).execute(context)
+            output_folder = self.output_folder_callable(*self.op_args, **self.op_kwargs)
 
             logging.info("Calling engine.%s(%s)" %
                          (self.spm_function, ','.join(map(str, params))))
@@ -166,10 +168,12 @@ class SpmPipelineOperator(PythonOperator, TransferPipelineXComs):
                 logging.error("SPM errors:")
                 logging.error(self.err.getvalue())
                 logging.error("-----------")
+                # Clean output folder before attempting to retry the computation
+                rmtree(output_folder, ignore_errors=True)
                 self.trigger_dag(context, self.on_failure_trigger_dag_id)
                 raise
 
-            self.pipeline_xcoms['folder'] = self.output_folder_callable(*self.op_args, **self.op_kwargs)
+            self.pipeline_xcoms['folder'] = output_folder
             self.pipeline_xcoms['spm_output'] = self.out.getvalue()
             self.pipeline_xcoms['spm_error'] = self.err.getvalue()
             self.write_pipeline_xcoms(context)
@@ -189,6 +193,8 @@ class SpmPipelineOperator(PythonOperator, TransferPipelineXComs):
                 self.trigger_dag(context, self.on_skip_trigger_dag_id)
                 raise
             except Exception:
+                # Clean output folder before attempting to retry the computation
+                rmtree(output_folder, ignore_errors=True)
                 self.trigger_dag(context, self.on_failure_trigger_dag_id)
                 raise
 
