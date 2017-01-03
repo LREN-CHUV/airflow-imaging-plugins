@@ -1,5 +1,6 @@
 
 import logging
+import random
 
 import os
 import copy
@@ -147,7 +148,8 @@ class ScanFolderOperator(BaseOperator):
             dr = session.query(DagRun).filter(
                 DagRun.dag_id == self.trigger_dag_id, DagRun.run_id == run_id).first()
             if dr:
-                offset = offset - 1
+                # Try to avoid too many collisions when backfilling a long backlog
+                offset = offset - random.randint(1, 100)
             else:
                 break
 
@@ -175,7 +177,8 @@ class ScanFolderOperator(BaseOperator):
                     session.rollback()
                     session.close()
                     session = None
-                    self.trigger_dag_run(context, path, session_dir_name, offset - 1)
+                    # Retry, while attempting to avoid too many collisions when backfilling a long backlog
+                    self.trigger_dag_run(context, path, session_dir_name, offset - random.randint(1, 10000))
             else:
                 logging.info("Criteria not met, moving on")
         finally:
