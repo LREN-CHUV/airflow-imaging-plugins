@@ -89,6 +89,8 @@ class SpmPipelineOperator(PythonOperator, TransferPipelineXComs):
     :type on_failure_trigger_dag_id: str
     """
     ui_color = '#c2560a'
+    template_fields = ('incoming_parameters',)
+    template_ext = tuple()
 
     @apply_defaults
     def __init__(

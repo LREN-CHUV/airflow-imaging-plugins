@@ -1,5 +1,7 @@
 import logging
 
+from textwrap import dedent
+
 PIPELINE_XCOMS = ['folder', 'session_id', 'participant_id',
                   'scan_date', 'spm_output', 'spm_error', 'dataset']
 
@@ -33,6 +35,25 @@ class TransferPipelineXComs(object):
     def __init__(self, parent_task):
         self.parent_task = parent_task
         self.pipeline_xcoms = {}
+        self.incoming_parameters = dedent("""
+          # Task {{ task.task_id }}
+
+          dataset = {{ task_instance.xcom_pull(task_ids='$parent_task', key='dataset') }}
+          folder = {{ task_instance.xcom_pull(task_ids='$parent_task', key='folder') }}
+          session_id = {{ task_instance.xcom_pull(task_ids='$parent_task', key='session_id') }}
+          scan_date = {{ task_instance.xcom_pull(task_ids='$parent_task', key='scan_date') }}
+
+          {% set spm_output = task_instance.xcom_pull(task_ids='$parent_task', key='spm_output') %}
+          {% set spm_error = task_instance.xcom_pull(task_ids='$parent_task', key='spm_error') %}
+          {% if spm_output or spm_error %}
+
+          # SPM output from previous task ($parent_task)
+          ## Output
+          {{ spm_output }}
+          ## Errors
+          {{ spm_error }}
+          {% endif %}
+        """.replace("$parent_task",parent_task))
 
     def read_pipeline_xcoms(self, context, expected=None):
         expected = expected or []
