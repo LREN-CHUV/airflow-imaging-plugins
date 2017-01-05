@@ -220,7 +220,7 @@ class ScanDailyFolderOperator(ScanFolderOperator):
             ready_marker_file='.ready',
             dataset=None,
             *args, **kwargs):
-        super(ScanFolderOperator, self).__init__(folder=folder, trigger_dag_id=trigger_dag_id,
+        super(ScanDailyFolderOperator, self).__init__(folder=folder, trigger_dag_id=trigger_dag_id,
                                                  python_callable=python_callable, is_valid_session_id=is_valid_session_id, dataset=dataset, *args, **kwargs)
         self.look_for_ready_marker_file = look_for_ready_marker_file
         self.ready_marker_file = ready_marker_file
