@@ -66,7 +66,6 @@ class PythonPipelineOperator(PythonOperator, TransferPipelineXComs):
                                 templates_exts=templates_exts,
                                 *args, **kwargs)
         TransferPipelineXComs.__init__(self, parent_task)
-        self.op_kwargs = None
 
     def pre_execute(self, context):
         self.read_pipeline_xcoms(context)
@@ -75,6 +74,8 @@ class PythonPipelineOperator(PythonOperator, TransferPipelineXComs):
             self.pipeline_xcoms['session_id'] = dr.conf['session_id']
 
     def execute(self, context):
+        self.op_kwargs = self.op_kwargs or {}
+        self.pipeline_xcoms = self.pipeline_xcoms or {}
         if self.provide_context:
             context.update(self.op_kwargs)
             context.update(self.pipeline_xcoms)
