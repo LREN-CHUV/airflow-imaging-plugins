@@ -13,6 +13,7 @@ from airflow.utils import apply_defaults
 from airflow.utils.state import State
 from airflow.operators.dagrun_operator import DagRunOrder
 from airflow.exceptions import AirflowSkipException
+from airflow.utils.db import provide_session
 from sqlalchemy.exc import IntegrityError
 
 
@@ -117,7 +118,8 @@ class ScanFolderOperator(BaseOperator):
                     self.trigger_dag_run(context, path, fname)
                     self.offset = self.offset - 1
 
-    def trigger_dag_run(self, context, path, session_dir_name):
+    @provide_session
+    def trigger_dag_run(self, context, path, session_dir_name, session=None):
         context = copy.copy(context)
         context_params = context['params']
         # Folder containing the DICOM files to process
@@ -127,7 +129,6 @@ class ScanFolderOperator(BaseOperator):
         context_params['session_id'] = session_dir_name
         context_params['dataset'] = self.dataset
 
-        session = settings.Session()
         while True:
             dr_time = roundUpTime(dateDelta=timedelta(minutes=self.offset))
             run_id = "trig__{0}".format(dr_time.isoformat())
@@ -142,37 +143,33 @@ class ScanFolderOperator(BaseOperator):
 
         context['start_date'] = dr_time
 
-        try:
-            dro = DagRunOrder(run_id=run_id)
-            dro = self.python_callable(context, dro)
-            if dro:
-                dr = DagRun(
-                    dag_id=self.trigger_dag_id,
-                    run_id=dro.run_id,
-                    execution_date=dr_time,
-                    start_date=datetime.now(),
-                    state=State.RUNNING,
-                    conf=dro.payload,
-                    external_trigger=True)
-                session.add(dr)
-                try:
-                    session.commit()
-                    logging.info("Created DagRun {}".format(dr))
-                except IntegrityError:
-                    # Bad luck, some concurrent thread has already created an execution
-                    # at this time
-                    session.rollback()
-                    session.close()
-                    session = None
-                    # Retry, while attempting to avoid too many collisions when
-                    # backfilling a long backlog
-                    self.offset = self.offset - random.randint(1, 10000)
-                    self.trigger_dag_run(context, path, session_dir_name)
-            else:
-                logging.info("Criteria not met, moving on")
-        finally:
-            if session:
+        dro = DagRunOrder(run_id=run_id)
+        dro = self.python_callable(context, dro)
+        if dro:
+            dr = DagRun(
+                dag_id=self.trigger_dag_id,
+                run_id=dro.run_id,
+                execution_date=dr_time,
+                start_date=datetime.now(),
+                state=State.RUNNING,
+                conf=dro.payload,
+                external_trigger=True)
+            session.add(dr)
+            try:
+                session.commit()
+                logging.info("Created DagRun {}".format(dr))
+            except IntegrityError:
+                # Bad luck, some concurrent thread has already created an execution
+                # at this time
+                session.rollback()
                 session.close()
+                session = None
+                # Retry, while attempting to avoid too many collisions when
+                # backfilling a long backlog
+                self.offset = self.offset - random.randint(1, 10000)
+                self.trigger_dag_run(context, path, session_dir_name)
+        else:
+            logging.info("Criteria not met, moving on")
 
 
 class ScanDailyFolderOperator(ScanFolderOperator):
