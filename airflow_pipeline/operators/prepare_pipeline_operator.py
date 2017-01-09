@@ -36,9 +36,9 @@ class PreparePipelineOperator(BaseOperator):
           # Task {{ task.task_id }}
           # Task configuration
 
-          Initial root folder: __$initial_root_folder__
+          Initial root folder: $initial_root_folder
 
-          ## Pipeline __{{ dag.dag_id }}__ parameters
+          ## Pipeline {{ dag.dag_id }} parameters
 
           dataset = {{ dag_run.conf['dataset'] }}
           session_id = {{ dag_run.conf['session_id'] }}

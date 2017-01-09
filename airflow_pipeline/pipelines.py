@@ -36,13 +36,13 @@ class TransferPipelineXComs(object):
         self.parent_task = parent_task
         self.pipeline_xcoms = {}
         self.incoming_parameters = dedent("""
-          # Task __{{ task.task_id }}__
+          # Task {{ task.task_id }}
           ## Incoming parameters
 
-          dataset = __{{ task_instance.xcom_pull(task_ids='$parent_task', key='dataset') }}__
-          folder = __{{ task_instance.xcom_pull(task_ids='$parent_task', key='folder') }}__
-          session_id = __{{ task_instance.xcom_pull(task_ids='$parent_task', key='session_id') }}__
-          scan_date = __{{ task_instance.xcom_pull(task_ids='$parent_task', key='scan_date') }}__
+          dataset = {{ task_instance.xcom_pull(task_ids='$parent_task', key='dataset') }}
+          folder = {{ task_instance.xcom_pull(task_ids='$parent_task', key='folder') }}
+          session_id = {{ task_instance.xcom_pull(task_ids='$parent_task', key='session_id') }}
+          scan_date = {{ task_instance.xcom_pull(task_ids='$parent_task', key='scan_date') }}
 
           {% set spm_output = task_instance.xcom_pull(task_ids='$parent_task', key='spm_output') %}
           {% set spm_error = task_instance.xcom_pull(task_ids='$parent_task', key='spm_error') %}
