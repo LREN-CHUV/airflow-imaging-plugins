@@ -5,6 +5,7 @@
 .. moduleauthor:: Ludovic Claude <ludovic.claude@chuv.ch>
 """
 
+from textwrap import dedent
 from airflow.operators import BaseOperator
 from airflow.utils import apply_defaults
 
@@ -20,7 +21,7 @@ class PreparePipelineOperator(BaseOperator):
     :type initial_root_folder: string
     """
 
-    template_fields = ()
+    template_fields = ('incoming_parameters',)
     template_ext = ()
     ui_color = '#94A1B7'
 
@@ -31,6 +32,17 @@ class PreparePipelineOperator(BaseOperator):
             *args, **kwargs):
         super(PreparePipelineOperator, self).__init__(*args, **kwargs)
         self.initial_root_folder = initial_root_folder
+        self.incoming_parameters = dedent("""
+          # Task {{ task.task_id }}
+          # Task configuration
+
+          Initial root folder: __$initial_root_folder__
+
+          ## Pipeline __{{ dag.dag_id }}__ parameters
+
+          dataset = {{ dag_run.dr.conf['dataset'] }}
+          session_id = {{ dag_run.conf['session_id'] }}
+        """.replace("$initial_root_folder",initial_root_folder))
 
     def execute(self, context):
         dr = context['dag_run']
