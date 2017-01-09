@@ -41,7 +41,7 @@ class PythonPipelineOperator(PythonOperator, TransferPipelineXComs):
     :param templates_exts: a list of file extensions to resolve while
         processing templated fields, for examples ``['.sql', '.hql']``
     """
-    template_fields = ('templates_dict',)
+    template_fields = ('templates_dict','incoming_parameters',)
     template_ext = tuple()
     ui_color = '#94A147'
 
