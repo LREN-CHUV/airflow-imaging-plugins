@@ -40,7 +40,7 @@ class PreparePipelineOperator(BaseOperator):
 
           ## Pipeline __{{ dag.dag_id }}__ parameters
 
-          dataset = {{ dag_run.dr.conf['dataset'] }}
+          dataset = {{ dag_run.conf['dataset'] }}
           session_id = {{ dag_run.conf['session_id'] }}
         """.replace("$initial_root_folder",initial_root_folder))
 
