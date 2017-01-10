@@ -103,7 +103,8 @@ class ScanFolderOperator(BaseOperator):
     def execute(self, context):
         self.scan_dirs(self.folder, context)
 
-    def scan_dirs(self, folder, context):
+    @provide_session
+    def scan_dirs(self, folder, context, session=None):
         if not os.path.exists(folder):
             raise AirflowSkipException
 
@@ -115,7 +116,7 @@ class ScanFolderOperator(BaseOperator):
                     logging.info(
                         'Prepare trigger for preprocessing : %s', str(fname))
 
-                    self.trigger_dag_run(context, path, fname)
+                    self.trigger_dag_run(context, path, fname, session)
                     self.offset = self.offset - 1
 
     @provide_session
@@ -222,7 +223,8 @@ class ScanDailyFolderOperator(ScanFolderOperator):
         self.look_for_ready_marker_file = look_for_ready_marker_file
         self.ready_marker_file = ready_marker_file
 
-    def scan_dirs(self, folder, context):
+    @provide_session
+    def scan_dirs(self, folder, context, session=None):
         daily_folder_date = context['execution_date']
 
         if not os.path.exists(folder):
@@ -248,5 +250,5 @@ class ScanDailyFolderOperator(ScanFolderOperator):
                     logging.info(
                         'Prepare trigger for preprocessing : %s', str(fname))
 
-                    self.trigger_dag_run(context, path, fname)
+                    self.trigger_dag_run(context, path, fname, session)
                     self.offset = self.offset - 1
