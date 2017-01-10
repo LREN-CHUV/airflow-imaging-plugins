@@ -152,6 +152,7 @@ class SpmPipelineOperator(PythonOperator, TransferPipelineXComs):
         if self.engine:
             params = super(SpmPipelineOperator, self).execute(context)
             output_folder = self.output_folder_callable(*self.op_args, **self.op_kwargs)
+            result_value = None
 
             logging.info("Calling engine.%s(%s)" %
                          (self.spm_function, ','.join(map(str, params))))
