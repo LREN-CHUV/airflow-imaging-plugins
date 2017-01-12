@@ -154,8 +154,8 @@ class SpmPipelineOperator(PythonOperator, TransferPipelineXComs):
             output_folder = self.output_folder_callable(*self.op_args, **self.op_kwargs)
             result_value = None
 
-            logging.info("Calling engine.%s(%s)" %
-                         (self.spm_function, ','.join(map(str, params))))
+            logging.info("Calling SPM function %s(%s)" %
+                         (self.spm_function, ','.join(map(lambda s: "'%s'" %s if isinstance(s, str) else str(s), params))))
 
             try:
                 result_value = getattr(self.engine, self.spm_function)(
