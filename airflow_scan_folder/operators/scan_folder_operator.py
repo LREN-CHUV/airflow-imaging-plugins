@@ -33,8 +33,12 @@ def default_trigger_dagrun(context, dag_run_obj):
         # The payload will be available in target dag context as
         # kwargs['dag_run'].conf
         dag_run_obj.payload = context['params']
+        # Use a granularity of days for run_id to avoid restarting the same computation on
+        # a MRI scan several times on the same day. Recomputation is expensive and should be minimised,
+        # to force a re-computation an administrator will need to delete existing DagRuns or configure the
+        # DAG to use another trigger_dagrun function that uses another naming convention for run_id
         dag_run_obj.run_id = session_id + '-' + \
-            start_date.strftime('%Y%m%d-%H%M')
+            start_date.strftime('%Y%m%d')
         return dag_run_obj
 
 
