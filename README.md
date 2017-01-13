@@ -11,10 +11,12 @@ Those include:
 * airflow_freespace.operators.FreeSpaceSensor: Waits for enough free disk space on the disk.
 * airflow_scan_folder.operators.ScanFolderOperator: Triggers a DAG run for a specified ``dag_id`` for each scan folder discovered in a daily folder.
 
+Python version: 3
+
 ## Installation
 
 ```
-  pip install from git: pip install git+https://github.com/LREN-CHUV/airflow-imaging-plugins.git@master#egg=airflow_imaging_plugins
+  pip3 install from git: pip3 install git+https://github.com/LREN-CHUV/airflow-imaging-plugins.git@master#egg=airflow_imaging_plugins
 ```
 
 ## Setup and configuration

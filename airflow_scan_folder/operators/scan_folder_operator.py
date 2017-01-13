@@ -7,7 +7,6 @@ import copy
 
 from datetime import datetime, timedelta
 
-from airflow import settings
 from airflow.models import BaseOperator, DagRun
 from airflow.utils import apply_defaults
 from airflow.utils.state import State
@@ -51,7 +50,7 @@ def roundUpTime(dt=None, dateDelta=timedelta(minutes=1)):
     """
     roundTo = dateDelta.total_seconds()
 
-    if dt == None:
+    if dt is None:
         dt = datetime.now()
     seconds = (dt - dt.min).seconds
     # rounding up, // is a floor division, not a comment on following line:
@@ -113,15 +112,16 @@ class ScanFolderOperator(BaseOperator):
             raise AirflowSkipException
 
         for fname in os.listdir(folder):
-            path = os.path.join(folder, fname)
-            if os.path.isdir(path):
-                if self.is_valid_session_id(fname):
+            if not (fname in ['.git', '.svn', '.tmp']):
+                path = os.path.join(folder, fname)
+                if os.path.isdir(path):
+                    if self.is_valid_session_id(fname):
 
-                    logging.info(
-                        'Prepare trigger for preprocessing : %s', str(fname))
+                        logging.info(
+                            'Prepare trigger for preprocessing : %s', str(fname))
 
-                    self.trigger_dag_run(context, path, fname, session)
-                    self.offset = self.offset - 1
+                        self.trigger_dag_run(context, path, fname, session)
+                        self.offset = self.offset - 1
 
     @provide_session
     def trigger_dag_run(self, context, path, session_dir_name, session=None):
