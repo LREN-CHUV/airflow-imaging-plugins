@@ -142,7 +142,8 @@ class SpmPipelineOperator(PythonOperator, TransferPipelineXComs):
             msg = 'Matlab has not started on this node'
             logging.error(msg)
             raise SPMError(msg)
-        self.read_pipeline_xcoms(context, expected = ['folder', 'session_id', 'participant_id', 'scan_date', 'dataset'])
+        self.read_pipeline_xcoms(context, expected=[
+                                 'folder', 'session_id', 'participant_id', 'scan_date', 'dataset'])
         self.pipeline_xcoms['task_id'] = self.task_id
         self.op_kwargs.update(self.pipeline_xcoms)
         self.out = StringIO()
@@ -151,11 +152,12 @@ class SpmPipelineOperator(PythonOperator, TransferPipelineXComs):
     def execute(self, context):
         if self.engine:
             params = super(SpmPipelineOperator, self).execute(context)
-            output_folder = self.output_folder_callable(*self.op_args, **self.op_kwargs)
+            output_folder = self.output_folder_callable(
+                *self.op_args, **self.op_kwargs)
             result_value = None
 
-            logging.info("Calling SPM function %s(%s)" %
-                         (self.spm_function, ','.join(map(lambda s: "'%s'" %s if isinstance(s, str) else str(s), params))))
+            logging.info("Calling SPM function %s(%s)", self.spm_function, ','.join(
+                map(lambda s: "'%s'" % s if isinstance(s, str) else str(s), params)))
 
             try:
                 result_value = getattr(self.engine, self.spm_function)(
@@ -171,7 +173,8 @@ class SpmPipelineOperator(PythonOperator, TransferPipelineXComs):
                 logging.error("SPM errors:")
                 logging.error(self.err.getvalue())
                 logging.error("-----------")
-                # Clean output folder before attempting to retry the computation
+                # Clean output folder before attempting to retry the
+                # computation
                 rmtree(output_folder, ignore_errors=True)
                 self.trigger_dag(context, self.on_failure_trigger_dag_id)
                 raise
@@ -196,7 +199,8 @@ class SpmPipelineOperator(PythonOperator, TransferPipelineXComs):
                 self.trigger_dag(context, self.on_skip_trigger_dag_id)
                 raise
             except Exception:
-                # Clean output folder before attempting to retry the computation
+                # Clean output folder before attempting to retry the
+                # computation
                 rmtree(output_folder, ignore_errors=True)
                 self.trigger_dag(context, self.on_failure_trigger_dag_id)
                 raise

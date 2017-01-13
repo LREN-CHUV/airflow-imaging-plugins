@@ -64,7 +64,7 @@ class TransferPipelineXComs(object):
             if value:
                 self.pipeline_xcoms[xcom] = value
             elif xcom in expected:
-                logging.warning("xcom argument '%s' is empty" % xcom)
+                logging.warning("xcom argument '%s' is empty", xcom)
 
     def write_pipeline_xcoms(self, context):
         for key, value in self.pipeline_xcoms.items():

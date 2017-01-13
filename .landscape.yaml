@@ -1,0 +1,25 @@
+doc-warnings: true
+test-warnings: false
+max-line-length: 120
+strictness: medium
+pep8:
+  full: true
+  disable:
+    - E402  # module level import not at top of file
+uses:
+  - flask
+pylint:
+  disable:
+    - broad-except
+    - cyclic-import
+    - invalid-name
+    - locally-disabled
+    - super-on-old-class
+    - wrong-import-order
+    - wrong-import-position
+    - logging-format-interpolation
+  options:
+docstring-min-length: 10
+autodetect: true
+python-targets:
+  - 3

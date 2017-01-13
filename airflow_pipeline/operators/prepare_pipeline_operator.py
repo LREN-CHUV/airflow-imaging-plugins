@@ -50,7 +50,7 @@ class PreparePipelineOperator(BaseOperator):
         dataset = dr.conf['dataset']
         folder = self.initial_root_folder + '/' + session_id
 
-        logging.info('folder %s, session_id %s' % (folder, session_id))
+        logging.info('folder %s, session_id %s', folder, session_id)
 
         self.xcom_push(context, key='folder', value=folder)
         self.xcom_push(context, key='session_id', value=session_id)
