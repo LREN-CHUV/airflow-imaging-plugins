@@ -25,5 +25,5 @@ class FreeSpaceSensor(BaseSensorOperator):
         disk = os.statvfs(self.path)
         free = disk.f_bavail / disk.f_blocks
         logging.info(
-            'Checking if their is enough free space on {0}, expected at least {1:.2%} free'.format(self.path, self.free_disk_threshold))
+            'Checking if there is enough free space on {0}, expected at least {1:.2%} free'.format(self.path, self.free_disk_threshold))
         return free >= self.free_disk_threshold
