@@ -101,7 +101,7 @@ class ScanFolderOperator(BaseOperator):
         self.trigger_dag_id = trigger_dag_id
         self.is_valid_session_id = is_valid_session_id
         self.dataset = dataset
-        self.offset = -1
+        self.offset = 1
 
     def execute(self, context):
         self.scan_dirs(self.folder, context)
@@ -121,7 +121,7 @@ class ScanFolderOperator(BaseOperator):
                             'Prepare trigger for preprocessing : %s', str(fname))
 
                         self.trigger_dag_run(context, path, fname, session)
-                        self.offset = self.offset - 1
+                        self.offset = self.offset + 1
 
     @provide_session
     def trigger_dag_run(self, context, path, session_dir_name, session=None):
@@ -171,7 +171,7 @@ class ScanFolderOperator(BaseOperator):
                 session = None
                 # Retry, while attempting to avoid too many collisions when
                 # backfilling a long backlog
-                self.offset = self.offset - random.randint(1, 10000)
+                self.offset = self.offset + random.randint(1, 10000)
                 self.trigger_dag_run(context, path, session_dir_name)
         else:
             logging.info("Criteria not met, moving on")
