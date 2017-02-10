@@ -19,6 +19,7 @@ from airflow_spm.errors import SPMError
 from airflow_pipeline.pipelines import TransferPipelineXComs
 
 import logging
+import os
 
 from shutil import rmtree
 from io import StringIO
@@ -155,6 +156,13 @@ class SpmPipelineOperator(PythonOperator, TransferPipelineXComs):
             output_folder = self.output_folder_callable(
                 *self.op_args, **self.op_kwargs)
             result_value = None
+
+            # Ensure that there is no data in the output folder as some SPM scripts can break if they find unexpected data...
+            try:
+                if os.path.exists(output_folder):
+                    os.removedirs(output_folder)
+            except:
+                logging.error("Cannot cleanup output directory %s before executing SPM function %s", output_folder, self.spm_function)
 
             logging.info("Calling SPM function %s(%s)", self.spm_function, ','.join(
                 map(lambda s: "'%s'" % s if isinstance(s, str) else str(s), params)))
