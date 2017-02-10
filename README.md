@@ -4,12 +4,24 @@
 
 Set of plugins helping to work with imaging data in Airflow.
 
-Those include:
+Imaging data is organised by folders, where each fist-level folder represents a scanning session.
+
+A 'pipeline' represents the steps to process a folder containing one scanning session.
+In Airflow, we use the XCOM mechanism to transmit data from one step of the pipeline to the next step.
+This is why each processing pipelines need to start with airflow_pipeline.operators.PreparePipelineOperator as it injects into XCOM the necessary information that is required for the following steps:
+
+* airflow_spm.operators.SpmPipelineOperator
+* airflow_pipeline.operators.PythonPipelineOperator
+
+## List of plugins
 
 * airflow_spm.operators.SpmOperator: Executes SPM or just Matlab
 * airflow_spm.operators.SpmPipelineOperator: Executes a pipeline on SPM, where a 'pipeline' is a function implemented in SPM
 * airflow_freespace.operators.FreeSpaceSensor: Waits for enough free disk space on the disk.
-* airflow_scan_folder.operators.ScanFolderOperator: Triggers a DAG run for a specified ``dag_id`` for each scan folder discovered in a daily folder.
+* airflow_scan_folder.operators.ScanFolderOperator: Triggers a DAG run for a specified ``dag_id`` for each scan folder discovered in a folder.
+* airflow_scan_folder.operators.ScanDailyFolderOperator: Triggers a DAG run for a specified ``dag_id`` for each scan folder discovered in a daily folder.
+* airflow_pipeline.operators.PreparePipelineOperator: An operator that prepares the pipeline
+* airflow_pipeline.operators.PythonPipelineOperator: A PythonOperator that moves XCOM data used by the pipeline
 
 Python version: 3
 
