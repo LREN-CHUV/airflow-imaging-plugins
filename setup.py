@@ -10,6 +10,7 @@ setup(
     zip_safe=False,
     packages=find_packages(exclude=['docs', 'tests*']),
     install_requires=[
-        'airflow>=1.7.0'
+        'airflow>=1.7.0',
+        'mri-meta-extract>=1.2.2'
     ]
 )

@@ -3,7 +3,9 @@ import logging
 from textwrap import dedent
 
 PIPELINE_XCOMS = ['folder', 'session_id', 'participant_id',
-                  'scan_date', 'spm_output', 'spm_error', 'dataset']
+                  'scan_date', 'spm_output', 'spm_error', 'dataset',
+                  'matlab_version', 'spm_version', 'spm_revision', 'provenance_details',
+                  'provenance_previous_step_id']
 
 
 def pipeline_trigger(parent_task):
@@ -44,6 +46,12 @@ class TransferPipelineXComs(object):
           session_id = {{ task_instance.xcom_pull(task_ids='$parent_task', key='session_id') }}
           scan_date = {{ task_instance.xcom_pull(task_ids='$parent_task', key='scan_date') }}
 
+          ## Provenance information
+          matlab_version = {{ task_instance.xcom_pull(task_ids='$parent_task', key='matlab_version') }}
+          spm_version = {{ task_instance.xcom_pull(task_ids='$parent_task', key='spm_version') }}
+          spm_revision = {{ task_instance.xcom_pull(task_ids='$parent_task', key='spm_revision') }}
+          provenance_details = {{ task_instance.xcom_pull(task_ids='$parent_task', key='provenance_details') }}
+
           {% set spm_output = task_instance.xcom_pull(task_ids='$parent_task', key='spm_output') %}
           {% set spm_error = task_instance.xcom_pull(task_ids='$parent_task', key='spm_error') %}
           {% if spm_output or spm_error %}
@@ -54,7 +62,7 @@ class TransferPipelineXComs(object):
           ### Errors
           {{ spm_error }}
           {% endif %}
-        """.replace("$parent_task",parent_task))
+        """.replace("$parent_task", parent_task))
 
     def read_pipeline_xcoms(self, context, expected=None):
         expected = expected or []

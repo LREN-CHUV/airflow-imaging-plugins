@@ -8,8 +8,11 @@
 from textwrap import dedent
 from airflow.operators import BaseOperator
 from airflow.utils import apply_defaults
+from mri_meta_extract.files_recording import create_provenance
 
 import logging
+import os
+import json
 
 
 class PreparePipelineOperator(BaseOperator):
@@ -24,6 +27,7 @@ class PreparePipelineOperator(BaseOperator):
     template_fields = ('incoming_parameters',)
     template_ext = ()
     ui_color = '#94A1B7'
+    spm_fact_file: '/etc/ansible/facts.d/spm.fact'
 
     @apply_defaults
     def __init__(
@@ -51,6 +55,14 @@ class PreparePipelineOperator(BaseOperator):
         folder = self.initial_root_folder + '/' + session_id
 
         logging.info('folder %s, session_id %s', folder, session_id)
+
+        if os.path.exists(spm_fact_file):
+            with open(spm_fact_file, 'r') as f:
+                spm_facts = json.load(f)
+                self.xcom_push(context, key='matlab_version', value=spm_facts['general']['matlab_version'])
+                self.xcom_push(context, key='spm_version', value=spm_facts['general']['spm_version'])
+                self.xcom_push(context, key='spm_revision', value=spm_facts['general']['spm_revision'])
+                self.xcom_push(context, key='provenance_details', value=json.dumps(spm_facts))
 
         self.xcom_push(context, key='folder', value=folder)
         self.xcom_push(context, key='session_id', value=session_id)

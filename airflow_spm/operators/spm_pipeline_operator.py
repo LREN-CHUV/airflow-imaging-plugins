@@ -17,12 +17,15 @@ from airflow.utils import apply_defaults
 from airflow.exceptions import AirflowSkipException
 from airflow_spm.errors import SPMError
 from airflow_pipeline.pipelines import TransferPipelineXComs
+from mri_meta_extract.files_recording import create_provenance, visit
 
 import logging
 import os
+import json
 
 from shutil import rmtree
 from io import StringIO
+from subprocess import check_output
 
 try:
     import matlab.engine
@@ -35,6 +38,7 @@ def default_validate_result(return_value, task_id):
         raise AirflowSkipException
     if return_value <= 0:
         raise SPMError('%s failed' % task_id)
+    return True
 
 
 def default_output_folder(folder):
@@ -88,6 +92,12 @@ class SpmPipelineOperator(PythonOperator, TransferPipelineXComs):
     :param on_failure_trigger_dag_id: The dag_id to trigger if this stage of the pipeline has failed,
         i.e. when validate_result_callable raises AirflowSkipException.
     :type on_failure_trigger_dag_id: str
+    :param boost_provenance_scan: When True, we consider that all the files from same folder share the same meta-data.
+        The processing is 2x faster. Enabled by default.
+    :type boost_provenance_scan: bool
+    :param session_id_by_patient: Rarely, a data set might use study IDs which are unique by patient (not for the whole study).
+        E.g.: LREN data. In such a case, you have to enable this flag. This will use PatientID + StudyID as a session ID.
+    :type session_id_by_patient: bool
     """
     ui_color = '#c2560a'
     template_fields = ('incoming_parameters',)
@@ -109,6 +119,8 @@ class SpmPipelineOperator(PythonOperator, TransferPipelineXComs):
             output_folder_callable=default_output_folder,
             on_skip_trigger_dag_id=None,
             on_failure_trigger_dag_id=None,
+            boost_provenance_scan=True,
+            session_id_by_patient=False,
             *args, **kwargs):
         PythonOperator.__init__(self,
                                 python_callable=spm_arguments_callable,
@@ -126,9 +138,12 @@ class SpmPipelineOperator(PythonOperator, TransferPipelineXComs):
         self.output_folder_callable = output_folder_callable
         self.on_skip_trigger_dag_id = on_skip_trigger_dag_id
         self.on_failure_trigger_dag_id = on_failure_trigger_dag_id
+        self.boost_provenance_scan = boost_provenance_scan
+        self.session_id_by_patient = session_id_by_patient
         self.engine = None
         self.out = None
         self.err = None
+        self.provenance_previous_step_id = None
 
     def pre_execute(self, context):
         spm_dir = str(configuration.get('spm', 'SPM_DIR'))
@@ -144,7 +159,9 @@ class SpmPipelineOperator(PythonOperator, TransferPipelineXComs):
             logging.error(msg)
             raise SPMError(msg)
         self.read_pipeline_xcoms(context, expected=[
-                                 'folder', 'session_id', 'participant_id', 'scan_date', 'dataset'])
+                                 'folder', 'session_id', 'participant_id', 'scan_date',
+                                 'dataset', 'matlab_version', 'spm_version', 'spm_revision',
+                                 'provenance_details'])
         self.pipeline_xcoms['task_id'] = self.task_id
         self.op_kwargs.update(self.pipeline_xcoms)
         self.out = StringIO()
@@ -157,12 +174,14 @@ class SpmPipelineOperator(PythonOperator, TransferPipelineXComs):
                 *self.op_args, **self.op_kwargs)
             result_value = None
 
-            # Ensure that there is no data in the output folder as some SPM scripts can break if they find unexpected data...
+            # Ensure that there is no data in the output folder as some SPM scripts
+            # can break if they find unexpected data...
             try:
                 if os.path.exists(output_folder):
                     os.removedirs(output_folder)
             except:
-                logging.error("Cannot cleanup output directory %s before executing SPM function %s", output_folder, self.spm_function)
+                logging.error("Cannot cleanup output directory %s before executing SPM function %s",
+                              output_folder, self.spm_function)
 
             logging.info("Calling SPM function %s(%s)", self.spm_function, ','.join(
                 map(lambda s: "'%s'" % s if isinstance(s, str) else str(s), params)))
@@ -190,7 +209,6 @@ class SpmPipelineOperator(PythonOperator, TransferPipelineXComs):
             self.pipeline_xcoms['folder'] = output_folder
             self.pipeline_xcoms['spm_output'] = self.out.getvalue()
             self.pipeline_xcoms['spm_error'] = self.err.getvalue()
-            self.write_pipeline_xcoms(context)
 
             logging.info("SPM returned %s", result_value)
             logging.info("-----------")
@@ -200,8 +218,9 @@ class SpmPipelineOperator(PythonOperator, TransferPipelineXComs):
             logging.info(self.err.getvalue())
             logging.info("-----------")
 
+            valid = False
             try:
-                self.validate_result_callable(
+                valid = self.validate_result_callable(
                     result_value, context['ti'].task_id)
             except AirflowSkipException:
                 self.trigger_dag(context, self.on_skip_trigger_dag_id)
@@ -212,6 +231,34 @@ class SpmPipelineOperator(PythonOperator, TransferPipelineXComs):
                 rmtree(output_folder, ignore_errors=True)
                 self.trigger_dag(context, self.on_failure_trigger_dag_id)
                 raise
+
+            if valid:
+                provenance_details = json.loads(pipeline_xcoms['provenance_details'])
+                provenance_details['spm_scripts'] = []
+                for path in self.matlab_paths:
+                    try:
+                        version = check_output('cd %s ; git describe --tags' % path, shell=True).strip()
+                        provenance_details['matlab_scripts'].append({
+                            'path': path,
+                            'version': version
+                        })
+                    except:
+                        logging.warning('Cannot find the Git version on folder %s', path)
+
+                provenance_id = create_provenance(pipeline_xcoms['dataset'],
+                                                  matlab_version=pipeline_xcoms['matlab_version'],
+                                                  spm_version=pipeline_xcoms['spm_version'],
+                                                  spm_revision=pipeline_xcoms['spm_revision'],
+                                                  fn_called=self.spm_function,
+                                                  fn_version=version,
+                                                  others=json.dumps(provenance_details))
+
+                provenance_step_id = visit(self.task_id, output_folder, provenance_id,
+                                           previous_step_id=self.provenance_previous_step_id,
+                                           boost=self.boost_provenance_scan, session_id_by_patient=self.session_id_by_patient)
+                self.pipeline_xcoms['provenance_previous_step_id'] = provenance_step_id
+
+            self.write_pipeline_xcoms(context)
 
             return result_value
         else:
