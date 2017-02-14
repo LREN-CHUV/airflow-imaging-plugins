@@ -8,7 +8,6 @@
 from textwrap import dedent
 from airflow.operators import BaseOperator
 from airflow.utils import apply_defaults
-from mri_meta_extract.files_recording import create_provenance
 
 import logging
 import os

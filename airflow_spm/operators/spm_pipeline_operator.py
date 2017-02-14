@@ -179,7 +179,7 @@ class SpmPipelineOperator(PythonOperator, TransferPipelineXComs):
             try:
                 if os.path.exists(output_folder):
                     os.removedirs(output_folder)
-            except:
+            except Exception:
                 logging.error("Cannot cleanup output directory %s before executing SPM function %s",
                               output_folder, self.spm_function)
 
