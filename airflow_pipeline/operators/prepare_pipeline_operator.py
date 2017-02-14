@@ -27,7 +27,7 @@ class PreparePipelineOperator(BaseOperator):
     template_fields = ('incoming_parameters',)
     template_ext = ()
     ui_color = '#94A1B7'
-    spm_fact_file: '/etc/ansible/facts.d/spm.fact'
+    spm_fact_file = '/etc/ansible/facts.d/spm.fact'
 
     @apply_defaults
     def __init__(

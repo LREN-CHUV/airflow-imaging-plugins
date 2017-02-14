@@ -187,6 +187,7 @@ class SpmPipelineOperator(PythonOperator, TransferPipelineXComs):
                 map(lambda s: "'%s'" % s if isinstance(s, str) else str(s), params)))
 
             try:
+                # Execute SPM function
                 result_value = getattr(self.engine, self.spm_function)(
                     stdout=self.out, stderr=self.err, *params)
 
@@ -242,7 +243,7 @@ class SpmPipelineOperator(PythonOperator, TransferPipelineXComs):
                             'path': path,
                             'version': version
                         })
-                    except:
+                    except CalledProcessError:
                         logging.warning('Cannot find the Git version on folder %s', path)
 
                 provenance_id = create_provenance(pipeline_xcoms['dataset'],
