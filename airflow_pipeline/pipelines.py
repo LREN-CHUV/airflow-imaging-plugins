@@ -3,7 +3,7 @@ import logging
 from textwrap import dedent
 
 PIPELINE_XCOMS = ['folder', 'session_id', 'participant_id',
-                  'scan_date', 'spm_output', 'spm_error', 'dataset',
+                  'scan_date', 'output', 'error', 'dataset',
                   'matlab_version', 'spm_version', 'spm_revision', 'provenance_details',
                   'provenance_previous_step_id']
 
@@ -52,15 +52,15 @@ class TransferPipelineXComs(object):
           spm_revision = {{ task_instance.xcom_pull(task_ids='$parent_task', key='spm_revision') }}
           provenance_details = {{ task_instance.xcom_pull(task_ids='$parent_task', key='provenance_details') }}
 
-          {% set spm_output = task_instance.xcom_pull(task_ids='$parent_task', key='spm_output') %}
-          {% set spm_error = task_instance.xcom_pull(task_ids='$parent_task', key='spm_error') %}
-          {% if spm_output or spm_error %}
+          {% set output = task_instance.xcom_pull(task_ids='$parent_task', key='output') %}
+          {% set error = task_instance.xcom_pull(task_ids='$parent_task', key='error') %}
+          {% if output or error %}
 
-          ## SPM output from previous task ($parent_task)
+          ## Output from previous task $parent_task
           ### Output
-          {{ spm_output }}
+          {{ output }}
           ### Errors
-          {{ spm_error }}
+          {{ error }}
           {% endif %}
         """.replace("$parent_task", parent_task))
 

@@ -208,8 +208,8 @@ class SpmPipelineOperator(PythonOperator, TransferPipelineXComs):
                 raise
 
             self.pipeline_xcoms['folder'] = output_folder
-            self.pipeline_xcoms['spm_output'] = self.out.getvalue()
-            self.pipeline_xcoms['spm_error'] = self.err.getvalue()
+            self.pipeline_xcoms['output'] = self.out.getvalue()
+            self.pipeline_xcoms['error'] = self.err.getvalue()
 
             logging.info("SPM returned %s", result_value)
             logging.info("-----------")
@@ -271,8 +271,8 @@ class SpmPipelineOperator(PythonOperator, TransferPipelineXComs):
         if dag_id:
             run_id = 'trig__' + datetime.now().isoformat()
             payload = {
-                'spm_output': self.out.getvalue(),
-                'spm_error': self.err.getvalue()
+                'output': self.out.getvalue(),
+                'error': self.err.getvalue()
             }
             payload.update(self.pipeline_xcoms)
 
