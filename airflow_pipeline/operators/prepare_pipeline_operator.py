@@ -55,8 +55,8 @@ class PreparePipelineOperator(BaseOperator):
 
         logging.info('folder %s, session_id %s', folder, session_id)
 
-        if os.path.exists(spm_fact_file):
-            with open(spm_fact_file, 'r') as f:
+        if os.path.exists(self.spm_fact_file):
+            with open(self.spm_fact_file, 'r') as f:
                 spm_facts = json.load(f)
                 self.xcom_push(context, key='matlab_version', value=spm_facts['general']['matlab_version'])
                 self.xcom_push(context, key='spm_version', value=spm_facts['general']['spm_version'])

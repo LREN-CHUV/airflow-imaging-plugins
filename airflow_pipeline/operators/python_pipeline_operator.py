@@ -40,6 +40,8 @@ class PythonPipelineOperator(PythonOperator, TransferPipelineXComs):
     :type templates_dict: dict of str
     :param templates_exts: a list of file extensions to resolve while
         processing templated fields, for examples ``['.sql', '.hql']``
+    :param parent_task: name of the parent task to use to locate XCom parameters
+    :type parent_task: str
     """
     template_fields = ('templates_dict','incoming_parameters',)
     template_ext = tuple()
