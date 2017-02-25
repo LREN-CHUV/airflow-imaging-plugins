@@ -12,8 +12,15 @@ except ImportError:
     from airflow.operators.docker_operator import DockerOperator
 from airflow.utils import apply_defaults
 from airflow_pipeline.pipelines import TransferPipelineXComs
+from mri_meta_extract.files_recording import create_provenance, visit
 
 import logging
+import os
+
+from shutil import rmtree
+
+def default_output_folder(folder):
+    return folder
 
 
 class DockerPipelineOperator(DockerOperator, TransferPipelineXComs):
@@ -56,10 +63,21 @@ class DockerPipelineOperator(DockerOperator, TransferPipelineXComs):
     :type tls_hostname: str or bool
     :param tls_ssl_version: Version of SSL to use when communicating with docker daemon.
     :type tls_ssl_version: str
-    :param tmp_dir: Mount point inside the container to a temporary directory created on the host by
+    :param container_tmp_dir: Mount point inside the container to a temporary directory created on the host by
         the operator. The path is also made available via the environment variable
         ``AIRFLOW_TMP_DIR`` inside the container.
-    :type tmp_dir: str
+    :type container_tmp_dir: str
+    :param container_input_dir: Mount point inside the container to the input directory create on the host by
+        the operator. The path is also made available via the environment variable
+        ``AIRFLOW_INPUT_DIR`` inside the container.
+    :type container_input_dir: str
+    :param container_output_dir: Mount point inside the container to the output directory create on the host by
+        the operator. The path is also made available via the environment variable
+        ``AIRFLOW_OUTPUT_DIR`` inside the container.
+    :type container_output_dir: str
+    :param output_folder_callable: A reference to an object that is callable.
+        It should return the location of the output folder on the host containing the results of the computation.
+    :type output_folder_callable: python callable
     :param user: Default user inside the docker container.
     :type user: int or str
     :param volumes: List of volumes to mount into the container, e.g.
@@ -71,6 +89,15 @@ class DockerPipelineOperator(DockerOperator, TransferPipelineXComs):
     :type xcom_all: bool
     :param parent_task: name of the parent task to use to locate XCom parameters
     :type parent_task: str
+    :param on_failure_trigger_dag_id: The dag_id to trigger if this stage of the pipeline has failed,
+        i.e. when validate_result_callable raises AirflowSkipException.
+    :type on_failure_trigger_dag_id: str
+    :param boost_provenance_scan: When True, we consider that all the files from same folder share the same meta-data.
+        The processing is 2x faster. Enabled by default.
+    :type boost_provenance_scan: bool
+    :param session_id_by_patient: Rarely, a data set might use study IDs which are unique by patient (not for the whole study).
+        E.g.: LREN data. In such a case, you have to enable this flag. This will use PatientID + StudyID as a session ID.
+    :type session_id_by_patient: bool
     """
     template_fields = ('templates_dict','incoming_parameters',)
     template_ext = tuple()
@@ -93,12 +120,18 @@ class DockerPipelineOperator(DockerOperator, TransferPipelineXComs):
             tls_client_key=None,
             tls_hostname=None,
             tls_ssl_version=None,
-            tmp_dir='/tmp/airflow',
+            container_tmp_dir='/tmp/airflow',
+            container_input_dir='/inputs',
+            container_output_dir='/outputs',
             user=None,
             volumes=None,
             xcom_push=True,
             xcom_all=True,
             parent_task=None,
+            output_folder_callable=default_output_folder,
+            on_failure_trigger_dag_id=None,
+            boost_provenance_scan=True,
+            session_id_by_patient=False,
             *args, **kwargs):
 
         DockerOperator.__init__(self,
@@ -116,48 +149,97 @@ class DockerPipelineOperator(DockerOperator, TransferPipelineXComs):
                                 tls_client_key=tls_client_key,
                                 tls_hostname=tls_hostname,
                                 tls_ssl_version=tls_ssl_version,
-                                tmp_dir=tmp_dir,
+                                tmp_dir=container_tmp_dir,
                                 user=user,
                                 volumes=volumes,
                                 xcom_push=xcom_push,
                                 xcom_all=xcom_all,
                                 *args, **kwargs)
         TransferPipelineXComs.__init__(self, parent_task)
-        self.logs = None
+        self.container_input_dir = container_input_dir
+        self.container_output_dir = container_output_dir
+        self.output_folder_callable = output_folder_callable
+        self.on_failure_trigger_dag_id = on_failure_trigger_dag_id
+        self.boost_provenance_scan = boost_provenance_scan
+        self.session_id_by_patient = session_id_by_patient
+        self.provenance_previous_step_id = None
 
     def pre_execute(self, context):
         self.read_pipeline_xcoms(context, expected=[
                                  'folder', 'session_id', 'participant_id', 'scan_date',
                                  'dataset'])
         self.pipeline_xcoms['task_id'] = self.task_id
-        self.op_kwargs.update(self.pipeline_xcoms)
 
     def execute(self, context):
 
-        self.logs = super(SpmPipelineOperator, self).execute(context)
-
-        self.op_kwargs = self.op_kwargs or {}
         self.pipeline_xcoms = self.pipeline_xcoms or {}
-        if self.provide_context:
-            context.update(self.op_kwargs)
-            context.update(self.pipeline_xcoms)
-            self.op_kwargs = context
+        host_output_dir = self.output_folder_callable(
+            **self.pipeline_xcoms)
+        logs = None
 
-        return_value = self.docker_callable(*self.op_args, **self.op_kwargs)
-        logging.info("Done. Returned value was: " + str(return_value))
+        # Ensure that there is no data in the output folder
+        try:
+            if os.path.exists(host_output_dir):
+                os.removedirs(host_output_dir)
+        except Exception:
+            logging.error("Cannot cleanup output directory %s before executing Docker container %s",
+                          host_output_dir, self.image)
 
-        if isinstance(return_value, dict):
-            self.pipeline_xcoms.update(return_value)
+        self.environment['AIRFLOW_INPUT_DIR'] = self.container_input_dir
+        self.volumes.append('{0}:{1}'.format(host_input_dir, self.container_input_dir))
+
+        self.environment['AIRFLOW_OUTPUT_DIR'] = self.container_output_dir
+        self.volumes.append('{0}:{1}'.format(host_input_dir, self.container_output_dir))
+
+        try:
+            logs = super(SpmPipelineOperator, self).execute(context)
+        except AirflowException:
+            logs = self.cli.logs(container=self.container['Id'])
+            logging.error("Docker container %s failed", self.image)
+            logging.error("-----------")
+            logging.error("Output:")
+            logging.error(logs)
+            logging.error("-----------")
+            # Clean output folder before attempting to retry the
+            # computation
+            rmtree(host_output_dir, ignore_errors=True)
+            self.trigger_dag(context, self.on_failure_trigger_dag_id)
+            raise
+
+        self.pipeline_xcoms['folder'] = host_output_dir
+        self.pipeline_xcoms['output'] = logs
+        self.pipeline_xcoms['error'] = ''
+
+        logging.info("-----------")
+        logging.info("Docker output:")
+        logging.info(logs)
+        logging.info("-----------")
+
+        if ':' not in self.image:
+            image = self.image
+            version = 'latest'
+        else:
+            image, version = self.image.split(':')
+
+        provenance_id = create_provenance(pipeline_xcoms['dataset'],
+                                          fn_called=image,
+                                          fn_version=version,
+                                          others='{"docker_image"="%s:%s"}' % (image, version))
+
+        provenance_step_id = visit(self.task_id, host_output_dir, provenance_id,
+                                   previous_step_id=self.provenance_previous_step_id,
+                                   boost=self.boost_provenance_scan, session_id_by_patient=self.session_id_by_patient)
+        self.pipeline_xcoms['provenance_previous_step_id'] = provenance_step_id
 
         self.write_pipeline_xcoms(context)
 
-        return return_value
+        return logs
 
-    def trigger_dag(self, context, dag_id):
+    def trigger_dag(self, context, dag_id, logs):
         if dag_id:
             run_id = 'trig__' + datetime.now().isoformat()
             payload = {
-                'output': self.logs,
+                'output': logs,
                 'error': ''
             }
             payload.update(self.pipeline_xcoms)
