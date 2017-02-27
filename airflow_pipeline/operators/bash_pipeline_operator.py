@@ -119,7 +119,6 @@ class BashPipelineOperator(BashOperator, TransferPipelineXComs):
         self.env['AIRFLOW_INPUT_DIR'] = self.pipeline_xcoms['folder']
         self.env['AIRFLOW_OUTPUT_DIR'] = output_dir
 
-        logging.info("Env: %s", self.env)
         try:
             logs = super(BashPipelineOperator, self).execute(context)
         except AirflowException:
