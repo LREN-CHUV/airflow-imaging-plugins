@@ -1,6 +1,7 @@
 """
 .. module:: operators.spm_pipeline_operator
-    :synopsis: Executes a pipeline on SPM, where a 'pipeline' is a function implemented in SPM
+    :synopsis: Executes a pipeline on SPM, where a 'pipeline' is a function implemented in SPM.
+               Provenance information is tracked by this operator.
 
 .. moduleauthor:: Ludovic Claude <ludovic.claude@chuv.ch>
 """

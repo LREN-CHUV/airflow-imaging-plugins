@@ -1,7 +1,7 @@
 
 """
 .. module:: operators.docker_pipeline_operator
-    :synopsis: A DockerOperator that moves XCOM data used by the pipeline
+    :synopsis: A DockerOperator that registers provenance information in the pipeline
 
 .. moduleauthor:: Ludovic Claude <ludovic.claude@chuv.ch>
 """
@@ -19,13 +19,14 @@ import os
 
 from shutil import rmtree
 
+
 def default_output_folder(folder):
     return folder
 
 
 class DockerPipelineOperator(DockerOperator, TransferPipelineXComs):
     """
-    A DockerOperator that moves XCOM data used by the pipeline.
+    A DockerOperator that registers provenance information in the pipeline.
 
     A temporary directory is created on the host and mounted into a container to allow storing files
     that together exceed the default disk size of 10GB in a container. The path to the mounted
@@ -99,7 +100,7 @@ class DockerPipelineOperator(DockerOperator, TransferPipelineXComs):
         E.g.: LREN data. In such a case, you have to enable this flag. This will use PatientID + StudyID as a session ID.
     :type session_id_by_patient: bool
     """
-    template_fields = ('templates_dict','incoming_parameters',)
+    template_fields = ('templates_dict', 'incoming_parameters',)
     template_ext = tuple()
     ui_color = '#e9ffdb'  # nyanza
 
@@ -192,7 +193,7 @@ class DockerPipelineOperator(DockerOperator, TransferPipelineXComs):
         self.volumes.append('{0}:{1}'.format(host_input_dir, self.container_output_dir))
 
         try:
-            logs = super(SpmPipelineOperator, self).execute(context)
+            logs = super(DockerPipelineOperator, self).execute(context)
         except AirflowException:
             logs = self.cli.logs(container=self.container['Id'])
             logging.error("Docker container %s failed", self.image)
@@ -209,11 +210,6 @@ class DockerPipelineOperator(DockerOperator, TransferPipelineXComs):
         self.pipeline_xcoms['folder'] = host_output_dir
         self.pipeline_xcoms['output'] = logs
         self.pipeline_xcoms['error'] = ''
-
-        logging.info("-----------")
-        logging.info("Docker output:")
-        logging.info(logs)
-        logging.info("-----------")
 
         if ':' not in self.image:
             image = self.image
