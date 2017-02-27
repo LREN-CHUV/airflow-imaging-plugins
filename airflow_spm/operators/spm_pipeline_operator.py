@@ -244,10 +244,10 @@ class SpmPipelineOperator(PythonOperator, TransferPipelineXComs):
                     except CalledProcessError:
                         logging.warning('Cannot find the Git version on folder %s', path)
 
-                provenance_id = create_provenance(pipeline_xcoms['dataset'],
-                                                  matlab_version=pipeline_xcoms['matlab_version'],
-                                                  spm_version=pipeline_xcoms['spm_version'],
-                                                  spm_revision=pipeline_xcoms['spm_revision'],
+                provenance_id = create_provenance(self.pipeline_xcoms['dataset'],
+                                                  matlab_version=self.pipeline_xcoms['matlab_version'],
+                                                  spm_version=self.pipeline_xcoms['spm_version'],
+                                                  spm_revision=self.pipeline_xcoms['spm_revision'],
                                                   fn_called=self.spm_function,
                                                   fn_version=version,
                                                   others=json.dumps(provenance_details))

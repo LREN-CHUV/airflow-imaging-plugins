@@ -218,7 +218,7 @@ class DockerPipelineOperator(DockerOperator, TransferPipelineXComs):
         else:
             image, version = self.image.split(':')
 
-        provenance_id = create_provenance(pipeline_xcoms['dataset'],
+        provenance_id = create_provenance(self.pipeline_xcoms['dataset'],
                                           fn_called=image,
                                           fn_version=version,
                                           others='{"docker_image"="%s:%s"}' % (image, version))

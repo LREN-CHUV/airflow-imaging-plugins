@@ -139,7 +139,7 @@ class BashPipelineOperator(BashOperator, TransferPipelineXComs):
         self.pipeline_xcoms['output'] = logs
         self.pipeline_xcoms['error'] = ''
 
-        provenance_id = create_provenance(pipeline_xcoms['dataset'],
+        provenance_id = create_provenance(self.pipeline_xcoms['dataset'],
                                           others='{"bash_command"="%s"}' % self.bash_command)
 
         provenance_step_id = visit(self.task_id, output_dir, provenance_id,
