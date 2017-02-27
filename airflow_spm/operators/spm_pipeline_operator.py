@@ -205,7 +205,7 @@ class SpmPipelineOperator(PythonOperator, TransferPipelineXComs):
                 # Clean output folder before attempting to retry the
                 # computation
                 rmtree(output_folder, ignore_errors=True)
-                self.trigger_dag(context, self.on_failure_trigger_dag_id)
+                self.trigger_dag(context, self.on_failure_trigger_dag_id, self.out.getvalue(), self.err.getvalue())
                 raise
 
             self.pipeline_xcoms['folder'] = output_folder
@@ -225,13 +225,13 @@ class SpmPipelineOperator(PythonOperator, TransferPipelineXComs):
                 valid = self.validate_result_callable(
                     result_value, context['ti'].task_id)
             except AirflowSkipException:
-                self.trigger_dag(context, self.on_skip_trigger_dag_id)
+                self.trigger_dag(context, self.on_skip_trigger_dag_id, self.out.getvalue(), self.err.getvalue())
                 raise
             except Exception:
                 # Clean output folder before attempting to retry the
                 # computation
                 rmtree(output_folder, ignore_errors=True)
-                self.trigger_dag(context, self.on_failure_trigger_dag_id)
+                self.trigger_dag(context, self.on_failure_trigger_dag_id, self.out.getvalue(), self.err.getvalue())
                 raise
 
             if valid:
@@ -267,25 +267,6 @@ class SpmPipelineOperator(PythonOperator, TransferPipelineXComs):
             msg = 'Matlab has not started on this node'
             logging.error(msg)
             raise SPMError(msg)
-
-    def trigger_dag(self, context, dag_id):
-        if dag_id:
-            run_id = 'trig__' + datetime.now().isoformat()
-            payload = {
-                'output': self.out.getvalue(),
-                'error': self.err.getvalue()
-            }
-            payload.update(self.pipeline_xcoms)
-
-            session = settings.Session()
-            dr = DagRun(
-                dag_id=dag_id,
-                run_id=run_id,
-                conf=payload,
-                external_trigger=True)
-            session.add(dr)
-            session.commit()
-            session.close()
 
     def on_kill(self):
         if self.engine:

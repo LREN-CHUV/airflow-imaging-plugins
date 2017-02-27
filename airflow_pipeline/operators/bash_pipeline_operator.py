@@ -128,7 +128,7 @@ class BashPipelineOperator(BashOperator, TransferPipelineXComs):
                 # Clean output folder before attempting to retry the
                 # computation
                 rmtree(output_dir, ignore_errors=True)
-            self.trigger_dag(context, self.on_failure_trigger_dag_id)
+            self.trigger_dag(context, self.on_failure_trigger_dag_id, logs)
             raise
 
         self.pipeline_xcoms['folder'] = output_dir
@@ -146,22 +146,3 @@ class BashPipelineOperator(BashOperator, TransferPipelineXComs):
         self.write_pipeline_xcoms(context)
 
         return logs
-
-    def trigger_dag(self, context, dag_id, logs):
-        if dag_id:
-            run_id = 'trig__' + datetime.now().isoformat()
-            payload = {
-                'output': logs,
-                'error': ''
-            }
-            payload.update(self.pipeline_xcoms)
-
-            session = settings.Session()
-            dr = DagRun(
-                dag_id=dag_id,
-                run_id=run_id,
-                conf=payload,
-                external_trigger=True)
-            session.add(dr)
-            session.commit()
-            session.close()

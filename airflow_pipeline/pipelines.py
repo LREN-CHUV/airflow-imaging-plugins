@@ -77,3 +77,22 @@ class TransferPipelineXComs(object):
     def write_pipeline_xcoms(self, context):
         for key, value in self.pipeline_xcoms.items():
             self.xcom_push(context, key=key, value=value)
+
+    def trigger_dag(self, context, dag_id, output, error = ''):
+        if dag_id:
+            run_id = 'trig__' + datetime.now().isoformat()
+            payload = {
+                'output': output,
+                'error': error
+            }
+            payload.update(self.pipeline_xcoms)
+
+            session = settings.Session()
+            dr = DagRun(
+                dag_id=dag_id,
+                run_id=run_id,
+                conf=payload,
+                external_trigger=True)
+            session.add(dr)
+            session.commit()
+            session.close()
