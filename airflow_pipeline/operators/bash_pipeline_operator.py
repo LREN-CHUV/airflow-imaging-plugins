@@ -117,7 +117,7 @@ class BashPipelineOperator(BashOperator, TransferPipelineXComs):
                 logging.error("Cannot cleanup output directory %s before executing Bash container %s",
                               output_dir, self.image)
 
-        self.env['AIRFLOW_INPUT_DIR'] = self.folder
+        self.env['AIRFLOW_INPUT_DIR'] = self.pipeline_xcoms['folder']
         self.env['AIRFLOW_OUTPUT_DIR'] = output_dir
 
         try:
@@ -144,7 +144,7 @@ class BashPipelineOperator(BashOperator, TransferPipelineXComs):
                                           others='{"bash_command"="%s"}' % self.bash_command)
 
         provenance_step_id = visit(self.task_id, output_dir, provenance_id,
-                                   previous_step_id=self.provenance_previous_step_id,
+                                   previous_step_id=self.pipeline_xcoms['provenance_previous_step_id'],
                                    boost=self.boost_provenance_scan, session_id_by_patient=self.session_id_by_patient)
         self.pipeline_xcoms['provenance_previous_step_id'] = provenance_step_id
 

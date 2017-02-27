@@ -223,7 +223,7 @@ class DockerPipelineOperator(DockerOperator, TransferPipelineXComs):
                                           others='{"docker_image"="%s:%s"}' % (image, version))
 
         provenance_step_id = visit(self.task_id, host_output_dir, provenance_id,
-                                   previous_step_id=self.provenance_previous_step_id,
+                                   previous_step_id=self.pipeline_xcoms['provenance_previous_step_id'],
                                    boost=self.boost_provenance_scan, session_id_by_patient=self.session_id_by_patient)
         self.pipeline_xcoms['provenance_previous_step_id'] = provenance_step_id
 
