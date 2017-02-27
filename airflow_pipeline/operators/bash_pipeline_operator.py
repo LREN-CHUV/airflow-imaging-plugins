@@ -11,6 +11,7 @@ try:
 except ImportError:
     from airflow.operators.bash_operator import BashOperator
 from airflow.utils import apply_defaults
+from airflow.exceptions import AirflowException
 from airflow_pipeline.pipelines import TransferPipelineXComs
 from mri_meta_extract.files_recording import create_provenance, visit
 
@@ -118,6 +119,7 @@ class BashPipelineOperator(BashOperator, TransferPipelineXComs):
         self.env['AIRFLOW_INPUT_DIR'] = self.pipeline_xcoms['folder']
         self.env['AIRFLOW_OUTPUT_DIR'] = output_dir
 
+        logging.info("Env: %s", self.env)
         try:
             logs = super(BashPipelineOperator, self).execute(context)
         except AirflowException:
