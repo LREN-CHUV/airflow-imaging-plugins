@@ -17,10 +17,6 @@ import json
 class PreparePipelineOperator(BaseOperator):
     """
     Prepare the pipeline by injecting additional information as XCOM messages.
-
-    :param initial_root_folder: root folder for the initial folder containing the scans to
-        process organised by folder and where the name of the folder is the session_id
-    :type initial_root_folder: string
     """
 
     template_fields = ('incoming_parameters',)
@@ -34,15 +30,15 @@ class PreparePipelineOperator(BaseOperator):
             initial_root_folder,
             *args, **kwargs):
         super(PreparePipelineOperator, self).__init__(*args, **kwargs)
-        self.initial_root_folder = initial_root_folder
         self.incoming_parameters = dedent("""
           # Task {{ task.task_id }}
-          # Task configuration
+          ## Task configuration
 
-          Initial root folder: $initial_root_folder
+          None
 
           ## Pipeline {{ dag.dag_id }} parameters
 
+          folder: dag_run.conf['folder']
           dataset = {{ dag_run.conf['dataset'] }}
           session_id = {{ dag_run.conf['session_id'] }}
         """.replace("$initial_root_folder",initial_root_folder))
@@ -51,7 +47,7 @@ class PreparePipelineOperator(BaseOperator):
         dr = context['dag_run']
         session_id = dr.conf['session_id']
         dataset = dr.conf['dataset']
-        folder = self.initial_root_folder + '/' + session_id
+        folder = dr.conf["folder"]
 
         logging.info('folder %s, session_id %s', folder, session_id)
 

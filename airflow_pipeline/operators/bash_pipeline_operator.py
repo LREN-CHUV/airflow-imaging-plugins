@@ -28,6 +28,10 @@ class BashPipelineOperator(BashOperator, TransferPipelineXComs):
     """
     A BashOperator that registers provenance information in the pipeline.
 
+    The path to the input directory can be accessed via the environment variable ``AIRFLOW_INPUT_DIR``.
+    The path to the output directory can be accessed via the environment variable ``AIRFLOW_OUTPUT_DIR``,
+    where output dir is computed from function output_folder_callable.
+
     :param bash_command: The command, set of commands or reference to a
         bash script (must be '.sh') to be executed.
     :type bash_command: string
@@ -57,7 +61,7 @@ class BashPipelineOperator(BashOperator, TransferPipelineXComs):
         E.g.: LREN data. In such a case, you have to enable this flag. This will use PatientID + StudyID as a session ID.
     :type session_id_by_patient: bool
     """
-    template_fields = ('templates_dict', 'incoming_parameters',)
+    template_fields = ('incoming_parameters',)
     template_ext = tuple()
     ui_color = '#e9ffdb'  # nyanza
 
@@ -113,6 +117,7 @@ class BashPipelineOperator(BashOperator, TransferPipelineXComs):
                 logging.error("Cannot cleanup output directory %s before executing Bash container %s",
                               output_dir, self.image)
 
+        self.env['AIRFLOW_INPUT_DIR'] = self.folder
         self.env['AIRFLOW_OUTPUT_DIR'] = output_dir
 
         try:
