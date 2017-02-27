@@ -6,10 +6,7 @@
 .. moduleauthor:: Ludovic Claude <ludovic.claude@chuv.ch>
 """
 
-from datetime import datetime
-
-from airflow import configuration, settings
-from airflow.models import DagRun
+from airflow import configuration
 try:
     from airflow.operators import PythonOperator
 except ImportError:
