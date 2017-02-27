@@ -62,3 +62,4 @@ class PreparePipelineOperator(BaseOperator):
         self.xcom_push(context, key='folder', value=folder)
         self.xcom_push(context, key='session_id', value=session_id)
         self.xcom_push(context, key='dataset', value=dataset)
+        self.xcom_push(context, key='provenance_previous_step_id', None)
