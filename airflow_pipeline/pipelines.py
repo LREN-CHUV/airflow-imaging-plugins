@@ -96,3 +96,10 @@ class TransferPipelineXComs(object):
             session.add(dr)
             session.commit()
             session.close()
+
+    def previous_step_id():
+        id = self.pipeline_xcoms['provenance_previous_step_id']
+        if id == '-1':
+            return None
+        else:
+            return int(id)
