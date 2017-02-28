@@ -237,6 +237,7 @@ class ScanDailyFolderOperator(ScanFolderOperator):
         daily_folder = os.path.join(folder, daily_folder_date.strftime(
             '%Y'), daily_folder_date.strftime('%Y%m%d'))
 
+        # Ugly hack for LREN
         if not os.path.isdir(daily_folder):
             daily_folder = os.path.join(
                 folder, '2014', daily_folder_date.strftime('%Y%m%d'))

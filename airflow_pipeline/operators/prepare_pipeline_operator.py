@@ -17,6 +17,9 @@ import json
 class PreparePipelineOperator(BaseOperator):
     """
     Prepare the pipeline by injecting additional information as XCOM messages.
+
+    :param include_spm_facts: When True, reads SPM facts from Ansible and add this information as XCOM messages.
+    :type include_spm_facts: bool
     """
 
     template_fields = ('incoming_parameters',)
@@ -27,7 +30,7 @@ class PreparePipelineOperator(BaseOperator):
     @apply_defaults
     def __init__(
             self,
-            initial_root_folder,
+            include_spm_facts = True,
             *args, **kwargs):
         super(PreparePipelineOperator, self).__init__(*args, **kwargs)
         self.incoming_parameters = dedent("""
@@ -41,7 +44,8 @@ class PreparePipelineOperator(BaseOperator):
           folder: {{ dag_run.conf['folder'] }}
           dataset = {{ dag_run.conf['dataset'] }}
           session_id = {{ dag_run.conf['session_id'] }}
-        """.replace("$initial_root_folder",initial_root_folder))
+        """)
+        self.include_spm_facts = include_spm_facts
 
     def execute(self, context):
         dr = context['dag_run']
@@ -51,13 +55,14 @@ class PreparePipelineOperator(BaseOperator):
 
         logging.info('folder %s, session_id %s', folder, session_id)
 
-        if os.path.exists(self.spm_fact_file):
-            with open(self.spm_fact_file, 'r') as f:
-                spm_facts = json.load(f)
-                self.xcom_push(context, key='matlab_version', value=spm_facts['general']['matlab_version'])
-                self.xcom_push(context, key='spm_version', value=spm_facts['general']['spm_version'])
-                self.xcom_push(context, key='spm_revision', value=spm_facts['general']['spm_revision'])
-                self.xcom_push(context, key='provenance_details', value=json.dumps(spm_facts))
+        if self.include_spm_facts:
+            if os.path.exists(self.spm_fact_file):
+                with open(self.spm_fact_file, 'r') as f:
+                    spm_facts = json.load(f)
+                    self.xcom_push(context, key='matlab_version', value=spm_facts['general']['matlab_version'])
+                    self.xcom_push(context, key='spm_version', value=spm_facts['general']['spm_version'])
+                    self.xcom_push(context, key='spm_revision', value=spm_facts['general']['spm_revision'])
+                    self.xcom_push(context, key='provenance_details', value=json.dumps(spm_facts))
 
         self.xcom_push(context, key='folder', value=folder)
         self.xcom_push(context, key='session_id', value=session_id)
