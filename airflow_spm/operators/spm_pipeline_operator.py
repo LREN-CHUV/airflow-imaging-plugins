@@ -254,7 +254,7 @@ class SpmPipelineOperator(PythonOperator, TransferPipelineXComs):
 
                 provenance_step_id = visit(self.task_id, output_folder, provenance_id,
                                            previous_step_id=self.previous_step_id(),
-                                           boost=self.boost_provenance_scan, session_id_by_patient=self.session_id_by_patient)
+                                           boost=self.boost_provenance_scan, sid_by_patient=self.session_id_by_patient)
                 self.pipeline_xcoms['provenance_previous_step_id'] = provenance_step_id
 
             self.write_pipeline_xcoms(context)
