@@ -43,24 +43,36 @@ class TransferPipelineXComs(object):
 
           dataset = {{ task_instance.xcom_pull(task_ids='$parent_task', key='dataset') }}
           folder = {{ task_instance.xcom_pull(task_ids='$parent_task', key='folder') }}
-          session_id = {{ task_instance.xcom_pull(task_ids='$parent_task', key='session_id') }}
-          scan_date = {{ task_instance.xcom_pull(task_ids='$parent_task', key='scan_date') }}
+          {% set session_id = task_instance.xcom_pull(task_ids='$parent_task', key='session_id') %}
+          {% if session_id %}
+          session_id = {{ session_id }}
+          {% endif %}
+          {% set scan_date = task_instance.xcom_pull(task_ids='$parent_task', key='scan_date') %}
+          {% if scan_date %}
+          scan_date = {{ scan_date }}
+          {% endif %}
 
+          {% set matlab_version = task_instance.xcom_pull(task_ids='$parent_task', key='matlab_version') %}
+          {% set spm_version = task_instance.xcom_pull(task_ids='$parent_task', key='spm_version') %}
+          {% set spm_revision = task_instance.xcom_pull(task_ids='$parent_task', key='spm_revision') %}
+          {% set provenance_details = task_instance.xcom_pull(task_ids='$parent_task', key='provenance_details') %}
+          {% if matlab_version or spm_version %}
           ## Provenance information
-          matlab_version = {{ task_instance.xcom_pull(task_ids='$parent_task', key='matlab_version') }}
-          spm_version = {{ task_instance.xcom_pull(task_ids='$parent_task', key='spm_version') }}
-          spm_revision = {{ task_instance.xcom_pull(task_ids='$parent_task', key='spm_revision') }}
-          provenance_details = {{ task_instance.xcom_pull(task_ids='$parent_task', key='provenance_details') }}
+          matlab_version = {{ matlab_version }}
+          spm_version = {{ spm_version }}
+          spm_revision = {{ spm_revision }}
+          provenance_details = {{ provenance_details }}
 
+          {% endif %}
           {% set output = task_instance.xcom_pull(task_ids='$parent_task', key='output') %}
           {% set error = task_instance.xcom_pull(task_ids='$parent_task', key='error') %}
           {% if output or error %}
-
           ## Output from previous task $parent_task
           ### Output
           {{ output }}
           ### Errors
           {{ error }}
+
           {% endif %}
         """.replace("$parent_task", parent_task))
 
