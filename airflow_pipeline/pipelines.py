@@ -5,7 +5,7 @@ from textwrap import dedent
 PIPELINE_XCOMS = ['folder', 'session_id', 'participant_id',
                   'scan_date', 'output', 'error', 'dataset',
                   'matlab_version', 'spm_version', 'spm_revision', 'provenance_details',
-                  'provenance_previous_step_id']
+                  'provenance_previous_step_id', 'relative_context_path']
 
 
 def pipeline_trigger(parent_task):

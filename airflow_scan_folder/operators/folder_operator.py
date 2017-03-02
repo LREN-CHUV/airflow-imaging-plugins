@@ -99,6 +99,7 @@ class DailyFolderOperator(BaseOperator):
         if not os.path.exists(folder):
             raise AirflowSkipException
 
+        rel_daily_folder = daily_folder_date.strftime('%Y'), daily_folder_date.strftime('%Y%m%d')
         daily_folder = os.path.join(folder, daily_folder_date.strftime(
             '%Y'), daily_folder_date.strftime('%Y%m%d'))
 
@@ -111,16 +112,17 @@ class DailyFolderOperator(BaseOperator):
             logging.info(
                 'Prepare trigger for preprocessing : %s', str(daily_folder))
 
-            self.trigger_dag_run(context, daily_folder, session)
+            self.trigger_dag_run(context, daily_folder, rel_daily_folder, session)
             self.offset = self.offset - 1
 
     @provide_session
-    def trigger_dag_run(self, context, path, session=None):
+    def trigger_dag_run(self, context, path, rel_daily_folder, session=None):
         context = copy.copy(context)
         context_params = context['params']
         # Folder containing the DICOM files to process
         context_params['folder'] = path
         context_params['dataset'] = self.dataset
+        context_params['relative_context_path'] = rel_daily_folder
 
         while True:
             dr_time = roundUpTime(datetime.now() - timedelta(minutes=self.offset))
@@ -160,6 +162,6 @@ class DailyFolderOperator(BaseOperator):
                 # Retry, while attempting to avoid too many collisions when
                 # backfilling a long backlog
                 self.offset = self.offset + random.randint(1, 10000)
-                self.trigger_dag_run(context, path)
+                self.trigger_dag_run(context, path, rel_daily_folder)
         else:
             logging.info("Criteria not met, moving on")
