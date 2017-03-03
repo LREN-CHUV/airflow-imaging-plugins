@@ -81,13 +81,13 @@ class FolderOperator(BaseOperator):
         self.offset = 1
 
     @provide_session
-    def trigger_dag_run(self, context, path, rel_daily_folder, session=None):
+    def trigger_dag_run(self, context, path, rel_folder, session=None):
         context = copy.copy(context)
         context_params = context['params']
         # Folder containing the DICOM files to process
         context_params['folder'] = path
         context_params['dataset'] = self.dataset
-        context_params['relative_context_path'] = rel_daily_folder
+        context_params['relative_context_path'] = rel_folder
 
         while True:
             dr_time = roundUpTime(datetime.now() - timedelta(minutes=self.offset))

@@ -30,7 +30,7 @@ class PreparePipelineOperator(BaseOperator):
     @apply_defaults
     def __init__(
             self,
-            include_spm_facts = True,
+            include_spm_facts=True,
             *args, **kwargs):
         super(PreparePipelineOperator, self).__init__(*args, **kwargs)
         self.incoming_parameters = dedent("""
@@ -59,6 +59,10 @@ class PreparePipelineOperator(BaseOperator):
         else:
             session_id = None
             logging.info('dataset %s, folder %s', dataset, folder)
+        if 'relative_context_path' in dr.conf:
+            relative_context_path = dr.conf['relative_context_path']
+        else:
+            relative_context_path = None
 
         if self.include_spm_facts:
             if os.path.exists(self.spm_fact_file):
@@ -74,3 +78,5 @@ class PreparePipelineOperator(BaseOperator):
         self.xcom_push(context, key='provenance_previous_step_id', value='-1')
         if session_id:
             self.xcom_push(context, key='session_id', value=session_id)
+        if relative_context_path:
+            self.xcom_push(context, key='relative_context_path', value=relative_context_path)
