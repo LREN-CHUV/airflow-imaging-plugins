@@ -126,6 +126,8 @@ class DockerPipelineOperator(DockerOperator, TransferPipelineXComs):
             parent_task=None,
             output_folder_callable=default_output_folder,
             on_failure_trigger_dag_id=None,
+            boost_provenance_scan=True,
+            session_id_by_patient=False,
             *args, **kwargs):
 
         DockerOperator.__init__(self,

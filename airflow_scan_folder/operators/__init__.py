@@ -1,4 +1,4 @@
 from .scan_folder_operator import ScanFolderOperator, ScanDailyFolderOperator
-from .folder_operator import DailyFolderOperator
+from .folder_operator import FlatFolderOperator, DailyFolderOperator
 
-__all__ = ['ScanFolderOperator', 'ScanDailyFolderOperator', 'DailyFolderOperator']
+__all__ = ['ScanFolderOperator', 'ScanDailyFolderOperator', 'FlatFolderOperator', 'DailyFolderOperator']
