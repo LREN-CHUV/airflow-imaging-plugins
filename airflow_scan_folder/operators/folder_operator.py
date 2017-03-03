@@ -187,7 +187,7 @@ class FlatFolderOperator(FolderOperator):
 
         if depth == self.depth:
             logging.info(
-                'Prepare trigger for preprocessing : %s', str(daily_folder))
+                'Prepare trigger for preprocessing : %s', str(folder))
 
             self.trigger_dag_run(context, folder, rel_folder, session)
         else:
