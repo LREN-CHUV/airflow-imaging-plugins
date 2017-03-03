@@ -180,10 +180,12 @@ class FlatFolderOperator(FolderOperator):
         self.scan_dirs(self.folder, context)
 
     @provide_session
-    def scan_dirs(self, folder, context, session=None, depth=0, rel_folder='/'):
+    def scan_dirs(self, folder, context, session=None, depth=0, rel_folder='.'):
 
         if not os.path.exists(folder):
             raise AirflowSkipException
+        if rel_folder == '.':
+            rel_folder = ''
 
         if depth == self.depth:
             logging.info(
