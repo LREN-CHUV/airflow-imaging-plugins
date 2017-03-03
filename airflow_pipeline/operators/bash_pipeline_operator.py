@@ -96,8 +96,7 @@ class BashPipelineOperator(BashOperator, TransferPipelineXComs):
         self.provenance_previous_step_id = None
 
     def pre_execute(self, context):
-        self.read_pipeline_xcoms(context, expected=[
-                                 'folder', 'session_id', 'dataset'])
+        self.read_pipeline_xcoms(context, expected=['folder', 'dataset'])
         self.pipeline_xcoms['task_id'] = self.task_id
 
     def execute(self, context):
@@ -122,17 +121,24 @@ class BashPipelineOperator(BashOperator, TransferPipelineXComs):
         try:
             logs = super(BashPipelineOperator, self).execute(context)
         except AirflowException:
-            logs = self.cli.logs(container=self.container['Id'])
+            logs = ""
+            errors = ""
             logging.error("Bash container %s failed", self.image)
             logging.error("-----------")
             logging.error("Output:")
-            logging.error(logs)
+            for line in iter(self.sp.stdout.readline, b''):
+                logging.error(line)
+                logs = logs + line + "\n"
+            logging.error("Errors:")
+            for line in iter(self.sp.stderr.readline, b''):
+                logging.error(line)
+                errors = errors + line + "\n"
             logging.error("-----------")
             if self.auto_cleanup_output_folder:
                 # Clean output folder before attempting to retry the
                 # computation
                 rmtree(output_dir, ignore_errors=True)
-            self.trigger_dag(context, self.on_failure_trigger_dag_id, logs)
+            self.trigger_dag(context, self.on_failure_trigger_dag_id, logs, errors)
             raise
 
         self.pipeline_xcoms['folder'] = output_dir
