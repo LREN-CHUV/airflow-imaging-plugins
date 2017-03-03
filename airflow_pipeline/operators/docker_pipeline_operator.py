@@ -94,12 +94,6 @@ class DockerPipelineOperator(DockerOperator, TransferPipelineXComs):
     :param on_failure_trigger_dag_id: The dag_id to trigger if this stage of the pipeline has failed,
         i.e. when validate_result_callable raises AirflowSkipException.
     :type on_failure_trigger_dag_id: str
-    :param boost_provenance_scan: When True, we consider that all the files from same folder share the same meta-data.
-        The processing is 2x faster. Enabled by default.
-    :type boost_provenance_scan: bool
-    :param session_id_by_patient: Rarely, a data set might use study IDs which are unique by patient (not for the whole study).
-        E.g.: LREN data. In such a case, you have to enable this flag. This will use PatientID + StudyID as a session ID.
-    :type session_id_by_patient: bool
     """
     template_fields = ('incoming_parameters',)
     template_ext = tuple()
@@ -132,8 +126,6 @@ class DockerPipelineOperator(DockerOperator, TransferPipelineXComs):
             parent_task=None,
             output_folder_callable=default_output_folder,
             on_failure_trigger_dag_id=None,
-            boost_provenance_scan=True,
-            session_id_by_patient=False,
             *args, **kwargs):
 
         DockerOperator.__init__(self,
@@ -224,8 +216,7 @@ class DockerPipelineOperator(DockerOperator, TransferPipelineXComs):
                                           others='{"docker_image"="%s:%s"}' % (image, version))
 
         provenance_step_id = visit(self.task_id, host_output_dir, provenance_id,
-                                   previous_step_id=self.previous_step_id(),
-                                   boost=self.boost_provenance_scan, sid_by_patient=self.session_id_by_patient)
+                                   previous_step_id=self.previous_step_id())
         self.pipeline_xcoms['provenance_previous_step_id'] = provenance_step_id
 
         self.write_pipeline_xcoms(context)
