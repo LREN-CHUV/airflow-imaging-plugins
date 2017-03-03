@@ -62,7 +62,7 @@ class BashPipelineOperator(BashOperator, TransferPipelineXComs):
         E.g.: LREN data. In such a case, you have to enable this flag. This will use PatientID + StudyID as a session ID.
     :type session_id_by_patient: bool
     """
-    template_fields = ('incoming_parameters',)
+    template_fields = ('incoming_parameters','bash_command', 'env')
     template_ext = tuple()
     ui_color = '#e9ffdb'  # nyanza
 

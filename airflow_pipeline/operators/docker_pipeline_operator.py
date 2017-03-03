@@ -95,8 +95,8 @@ class DockerPipelineOperator(DockerOperator, TransferPipelineXComs):
         i.e. when validate_result_callable raises AirflowSkipException.
     :type on_failure_trigger_dag_id: str
     """
-    template_fields = ('incoming_parameters',)
-    template_ext = tuple()
+    template_fields = ('incoming_parameters','command',)
+    template_ext = ('.sh', '.bash',)
     ui_color = '#e9ffdb'  # nyanza
 
     @apply_defaults
