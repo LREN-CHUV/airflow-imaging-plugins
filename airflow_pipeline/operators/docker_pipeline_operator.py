@@ -162,13 +162,13 @@ class DockerPipelineOperator(DockerOperator, TransferPipelineXComs):
 
     def pre_execute(self, context):
         self.read_pipeline_xcoms(context, expected=[
-                                 'folder', 'session_id', 'participant_id', 'scan_date',
-                                 'dataset'])
+                                 'folder', 'dataset'])
         self.pipeline_xcoms['task_id'] = self.task_id
 
     def execute(self, context):
 
         self.pipeline_xcoms = self.pipeline_xcoms or {}
+        host_input_dir = self.pipeline_xcoms['folder']
         host_output_dir = self.output_folder_callable(
             **self.pipeline_xcoms)
         logs = None
@@ -185,7 +185,7 @@ class DockerPipelineOperator(DockerOperator, TransferPipelineXComs):
         self.volumes.append('{0}:{1}'.format(host_input_dir, self.container_input_dir))
 
         self.environment['AIRFLOW_OUTPUT_DIR'] = self.container_output_dir
-        self.volumes.append('{0}:{1}'.format(host_input_dir, self.container_output_dir))
+        self.volumes.append('{0}:{1}'.format(host_output_dir, self.container_output_dir))
 
         try:
             logs = super(DockerPipelineOperator, self).execute(context)
