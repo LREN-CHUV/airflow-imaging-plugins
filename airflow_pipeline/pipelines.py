@@ -1,5 +1,6 @@
 import logging
 
+from datetime import datetime
 from textwrap import dedent
 
 PIPELINE_XCOMS = ['folder', 'session_id', 'participant_id',
