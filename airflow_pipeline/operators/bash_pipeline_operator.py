@@ -112,8 +112,8 @@ class BashPipelineOperator(BashOperator, TransferPipelineXComs):
                 if os.path.exists(output_dir):
                     os.removedirs(output_dir)
             except Exception:
-                logging.error("Cannot cleanup output directory %s before executing Bash container %s",
-                              output_dir, self.image)
+                logging.error("Cannot cleanup output directory %s before executing Bash command",
+                              output_dir)
 
         self.env['AIRFLOW_INPUT_DIR'] = self.pipeline_xcoms['folder']
         self.env['AIRFLOW_OUTPUT_DIR'] = output_dir
@@ -123,7 +123,7 @@ class BashPipelineOperator(BashOperator, TransferPipelineXComs):
         except AirflowException:
             logs = ""
             errors = ""
-            logging.error("Bash container %s failed", self.image)
+            logging.error("Bash command failed")
             logging.error("-----------")
             logging.error("Output:")
             for line in iter(self.sp.stdout.readline, b''):
