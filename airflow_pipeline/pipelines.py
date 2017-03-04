@@ -1,5 +1,7 @@
 import logging
 
+from airflow.settings import Session
+
 from datetime import datetime
 from textwrap import dedent
 
@@ -100,7 +102,7 @@ class TransferPipelineXComs(object):
             }
             payload.update(self.pipeline_xcoms)
 
-            session = settings.Session()
+            session = Session()
             dr = DagRun(
                 dag_id=dag_id,
                 run_id=run_id,
