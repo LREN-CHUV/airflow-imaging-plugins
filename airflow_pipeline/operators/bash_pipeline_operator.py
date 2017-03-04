@@ -122,23 +122,18 @@ class BashPipelineOperator(BashOperator, TransferPipelineXComs):
             logs = super(BashPipelineOperator, self).execute(context)
         except AirflowException:
             logs = ""
-            errors = ""
             logging.error("Bash command failed")
             logging.error("-----------")
             logging.error("Output:")
             for line in iter(self.sp.stdout.readline, b''):
                 logging.error(line)
                 logs = logs + line + "\n"
-            logging.error("Errors:")
-            for line in iter(self.sp.stderr.readline, b''):
-                logging.error(line)
-                errors = errors + line + "\n"
             logging.error("-----------")
             if self.auto_cleanup_output_folder:
                 # Clean output folder before attempting to retry the
                 # computation
                 rmtree(output_dir, ignore_errors=True)
-            self.trigger_dag(context, self.on_failure_trigger_dag_id, logs, errors)
+            self.trigger_dag(context, self.on_failure_trigger_dag_id, logs)
             raise
 
         self.pipeline_xcoms['folder'] = output_dir
