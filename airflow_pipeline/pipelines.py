@@ -91,6 +91,7 @@ class TransferPipelineXComs(object):
 
     def write_pipeline_xcoms(self, context):
         for key, value in self.pipeline_xcoms.items():
+            logging.warning("Write XCOM %s=%s", key, value)
             self.xcom_push(context, key=key, value=value)
 
     def trigger_dag(self, context, dag_id, output, error = ''):
