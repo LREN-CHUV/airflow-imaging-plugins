@@ -6,10 +6,7 @@
 .. moduleauthor:: Ludovic Claude <ludovic.claude@chuv.ch>
 """
 
-try:
-    from airflow.operators import DockerOperator
-except ImportError:
-    from airflow.operators.docker_operator import DockerOperator
+from airflow.operators.docker_operator import DockerOperator
 from airflow.utils import apply_defaults
 from airflow.exceptions import AirflowException
 from airflow_pipeline.pipelines import TransferPipelineXComs

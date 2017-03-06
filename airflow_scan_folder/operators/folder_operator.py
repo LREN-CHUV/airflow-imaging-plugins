@@ -1,7 +1,9 @@
 """
 .. module:: operators.folder_operator
-    :synopsis: DailyFolderOperator to look for the subfolder matching the execution date year
-               then the full execution date day and to trigger a pipeline DAG run.
+    :synopsis: DailyFolderOperator triggers a DAG run for a specified ``dag_id`` for the daily
+               folder matching path root_folder/yyyy/yyyyMMdd where the date used is the execution date.
+               FlatFolderOperator triggers a DAG run for a specified ``dag_id`` for each folder discovered
+               in a parent folder.
 
 .. moduleauthor:: Ludovic Claude <ludovic.claude@chuv.ch>
 """
@@ -203,8 +205,8 @@ class FlatFolderOperator(FolderOperator):
 
 class DailyFolderOperator(FolderOperator):
     """
-    Triggers a DAG run for a specified ``dag_id`` for each scan folder discovered
-    in a parent folder
+    Triggers a DAG run for a specified ``dag_id`` for the daily folder matching path
+    root_folder/yyyy/yyyyMMdd where the date used is the execution date.
 
     :param folder: root folder
     :type folder: str

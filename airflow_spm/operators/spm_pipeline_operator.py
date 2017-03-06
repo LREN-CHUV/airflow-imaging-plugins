@@ -7,10 +7,7 @@
 """
 
 from airflow import configuration
-try:
-    from airflow.operators import PythonOperator
-except ImportError:
-    from airflow.operators.python_operator import PythonOperator
+from airflow.operators.python_operator import PythonOperator
 from airflow.utils import apply_defaults
 from airflow.exceptions import AirflowSkipException
 from airflow_spm.errors import SPMError

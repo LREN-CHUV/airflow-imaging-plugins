@@ -6,7 +6,7 @@
 """
 
 from airflow import configuration
-from airflow.operators import PythonOperator
+from airflow.operators.python_operator import PythonOperator
 from airflow.utils import apply_defaults
 from airflow_spm.errors import SPMError
 

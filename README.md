@@ -20,8 +20,13 @@ This is why each processing pipelines need to start with airflow_pipeline.operat
 * airflow_freespace.operators.FreeSpaceSensor: Waits for enough free disk space on the disk.
 * airflow_scan_folder.operators.ScanFolderOperator: Triggers a DAG run for a specified ``dag_id`` for each scan folder discovered in a folder.
 * airflow_scan_folder.operators.ScanDailyFolderOperator: Triggers a DAG run for a specified ``dag_id`` for each scan folder discovered in a daily folder.
+* airflow_scan_folder.operators.FlatFolderOperator: Triggers a DAG run for a specified ``dag_id`` for each folder discovered in a parent folder.
+* airflow_scan_folder.operators.DailyFolderOperator: Triggers a DAG run for a specified ``dag_id`` for the daily folder matching path
+  root_folder/yyyy/yyyyMMdd where the date used is the execution date.
 * airflow_pipeline.operators.PreparePipelineOperator: An operator that prepares the pipeline
 * airflow_pipeline.operators.PythonPipelineOperator: A PythonOperator that moves XCOM data used by the pipeline
+* airflow_pipeline.operators.BashPipelineOperator: A BashOperator that registers provenance information in the pipeline
+* airflow_pipeline.operators.DockerPipelineOperator: A DockerOperator that registers provenance information in the pipeline
 
 Python version: 3
 

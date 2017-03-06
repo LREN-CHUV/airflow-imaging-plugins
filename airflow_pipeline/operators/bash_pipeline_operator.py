@@ -6,10 +6,7 @@
 .. moduleauthor:: Ludovic Claude <ludovic.claude@chuv.ch>
 """
 
-try:
-    from airflow.operators import BashOperator
-except ImportError:
-    from airflow.operators.bash_operator import BashOperator
+from airflow.operators.bash_operator import BashOperator
 from airflow.utils import apply_defaults
 from airflow.exceptions import AirflowException
 from airflow_pipeline.pipelines import TransferPipelineXComs
