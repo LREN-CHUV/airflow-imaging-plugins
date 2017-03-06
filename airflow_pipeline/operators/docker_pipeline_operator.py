@@ -182,10 +182,10 @@ class DockerPipelineOperator(DockerOperator, TransferPipelineXComs):
                           host_output_dir, self.image)
 
         self.environment['AIRFLOW_INPUT_DIR'] = self.container_input_dir
-        self.volumes.append('{0}:{1}'.format(host_input_dir, self.container_input_dir))
+        self.volumes.append('{0}:{1}:ro'.format(host_input_dir, self.container_input_dir))
 
         self.environment['AIRFLOW_OUTPUT_DIR'] = self.container_output_dir
-        self.volumes.append('{0}:{1}'.format(host_output_dir, self.container_output_dir))
+        self.volumes.append('{0}:{1}:rw'.format(host_output_dir, self.container_output_dir))
 
         try:
             logs = super(DockerPipelineOperator, self).execute(context)
