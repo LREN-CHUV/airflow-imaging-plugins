@@ -19,7 +19,7 @@ import os
 import json
 
 from shutil import rmtree
-from io import StringIO
+from io import StringIO, CalledProcessError
 from subprocess import check_output
 
 try:
@@ -229,7 +229,7 @@ class SpmPipelineOperator(PythonOperator, TransferPipelineXComs):
                 raise
 
             if valid:
-                provenance_details = json.loads(pipeline_xcoms['provenance_details'])
+                provenance_details = json.loads(self.pipeline_xcoms['provenance_details'])
                 provenance_details['spm_scripts'] = []
                 for path in self.matlab_paths:
                     try:
