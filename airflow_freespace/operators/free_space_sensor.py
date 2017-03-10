@@ -4,9 +4,10 @@ import logging
 from airflow.operators.sensors import BaseSensorOperator
 from airflow.utils import apply_defaults
 
+
 class FreeSpaceSensor(BaseSensorOperator):
     """
-    Waits until their is enough free space on the disk.
+    Waits until there is enough free space on the disk.
 
     :param path: path of the disk area to check for free space
     :type path: string
@@ -24,6 +25,6 @@ class FreeSpaceSensor(BaseSensorOperator):
     def poke(self, context):
         disk = os.statvfs(self.path)
         free = disk.f_bavail / disk.f_blocks
-        logging.info(
-            'Checking if there is enough free space on {0}, expected at least {1:.2%} free'.format(self.path, self.free_disk_threshold))
+        logging.info('Checking if there is enough free space on {0}, expected at least {1:.2%} free'
+                     .format(self.path, self.free_disk_threshold))
         return free >= self.free_disk_threshold

@@ -28,10 +28,7 @@ class PreparePipelineOperator(BaseOperator):
     spm_fact_file = '/etc/ansible/facts.d/spm.fact'
 
     @apply_defaults
-    def __init__(
-            self,
-            include_spm_facts=True,
-            *args, **kwargs):
+    def __init__(self, include_spm_facts=True, *args, **kwargs):
         super(PreparePipelineOperator, self).__init__(*args, **kwargs)
         self.incoming_parameters = dedent("""
           # Task {{ task.task_id }}
