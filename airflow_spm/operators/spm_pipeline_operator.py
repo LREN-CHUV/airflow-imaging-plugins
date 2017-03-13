@@ -19,7 +19,8 @@ import os
 import json
 
 from shutil import rmtree
-from io import StringIO, CalledProcessError
+from io import StringIO
+from subprocess import CalledProcessError
 from subprocess import check_output
 
 try:
