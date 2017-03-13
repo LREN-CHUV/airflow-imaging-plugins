@@ -61,7 +61,7 @@ class BashPipelineOperator(BashOperator, TransferPipelineXComs):
         ID.
     :type dataset_config: dict
     """
-    template_fields = ('incoming_parameters','bash_command', 'env')
+    template_fields = ('incoming_parameters', 'bash_command', 'env')
     template_ext = tuple()
     ui_color = '#e9ffdb'  # nyanza
 
@@ -139,7 +139,8 @@ class BashPipelineOperator(BashOperator, TransferPipelineXComs):
         provenance_id = create_provenance(self.pipeline_xcoms['dataset'], software_versions={
             'others': '{"bash_command"="%s"}' % self.bash_command})
 
-        provenance_step_id = visit(self.task_id, output_dir, provenance_id, previous_step_id=self.previous_step_id(),
+        provenance_step_id = visit(self.task_id, output_dir, provenance_id,
+                                   previous_step_id=self.previous_step_id(),
                                    config=self.dataset_config)
         self.pipeline_xcoms['provenance_previous_step_id'] = provenance_step_id
 

@@ -251,7 +251,8 @@ class SpmPipelineOperator(PythonOperator, TransferPipelineXComs):
                     'others': json.dumps(provenance_details)})
 
                 provenance_step_id = visit(self.task_id, output_folder, provenance_id,
-                                           previous_step_id=self.previous_step_id(), config=self.dataset_config)
+                                           previous_step_id=self.previous_step_id(),
+                                           config=self.dataset_config)
                 self.pipeline_xcoms['provenance_previous_step_id'] = provenance_step_id
 
             self.write_pipeline_xcoms(context)
