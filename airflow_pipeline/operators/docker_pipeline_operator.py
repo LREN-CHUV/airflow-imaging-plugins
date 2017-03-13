@@ -92,7 +92,7 @@ class DockerPipelineOperator(DockerOperator, TransferPipelineXComs):
         i.e. when validate_result_callable raises AirflowSkipException.
     :type on_failure_trigger_dag_id: str
     """
-    template_fields = ('incoming_parameters','command',)
+    template_fields = ('incoming_parameters', 'command',)
     template_ext = ('.sh', '.bash',)
     ui_color = '#e9ffdb'  # nyanza
 
@@ -168,7 +168,6 @@ class DockerPipelineOperator(DockerOperator, TransferPipelineXComs):
         host_input_dir = self.pipeline_xcoms['folder']
         host_output_dir = self.output_folder_callable(
             **self.pipeline_xcoms)
-        logs = None
 
         # Ensure that there is no data in the output folder
         try:
@@ -209,10 +208,8 @@ class DockerPipelineOperator(DockerOperator, TransferPipelineXComs):
         else:
             image, version = self.image.split(':')
 
-        provenance_id = create_provenance(self.pipeline_xcoms['dataset'],
-                                          fn_called=image,
-                                          fn_version=version,
-                                          others='{"docker_image"="%s:%s"}' % (image, version))
+        provenance_id = create_provenance(self.pipeline_xcoms['dataset'], software_versions={
+            'fn_called': image, 'fn_version': version, 'others': '{"docker_image"="%s:%s"}' % (image, version)})
 
         provenance_step_id = visit(self.task_id, host_output_dir, provenance_id,
                                    previous_step_id=self.previous_step_id())
