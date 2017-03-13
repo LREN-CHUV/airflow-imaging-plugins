@@ -88,12 +88,14 @@ class SpmPipelineOperator(PythonOperator, TransferPipelineXComs):
     :param on_failure_trigger_dag_id: The dag_id to trigger if this stage of the pipeline has failed,
         i.e. when validate_result_callable raises AirflowSkipException.
     :type on_failure_trigger_dag_id: str
-    :param boost_provenance_scan: When True, we consider that all the files from same folder share the same meta-data.
+    :param dataset_config: Collection of flags and setting related to the dataset:
+        - boost_provenance_scan: When True, we consider that all the files from same folder share the same meta-data.
         The processing is 2x faster. Enabled by default.
-    :type boost_provenance_scan: bool
-    :param session_id_by_patient: Rarely, a data set might use study IDs which are unique by patient (not for the whole study).
-        E.g.: LREN data. In such a case, you have to enable this flag. This will use PatientID + StudyID as a session ID.
-    :type session_id_by_patient: bool
+        - session_id_by_patient: Rarely, a data set might use study IDs which are unique by patient (not for the whole
+        study).
+        E.g.: LREN data. In such a case, you have to enable this flag. This will use PatientID + StudyID as a session
+        ID.
+    :type dataset_config: dict
     """
     ui_color = '#c2560a'
     template_fields = ('incoming_parameters',)
@@ -115,8 +117,7 @@ class SpmPipelineOperator(PythonOperator, TransferPipelineXComs):
             output_folder_callable=default_output_folder,
             on_skip_trigger_dag_id=None,
             on_failure_trigger_dag_id=None,
-            boost_provenance_scan=True,
-            session_id_by_patient=False,
+            dataset_config=None,
             *args, **kwargs):
         PythonOperator.__init__(self,
                                 python_callable=spm_arguments_callable,
@@ -134,8 +135,7 @@ class SpmPipelineOperator(PythonOperator, TransferPipelineXComs):
         self.output_folder_callable = output_folder_callable
         self.on_skip_trigger_dag_id = on_skip_trigger_dag_id
         self.on_failure_trigger_dag_id = on_failure_trigger_dag_id
-        self.boost_provenance_scan = boost_provenance_scan
-        self.session_id_by_patient = session_id_by_patient
+        self.dataset_config = dataset_config
         self.engine = None
         self.out = None
         self.err = None
@@ -251,9 +251,7 @@ class SpmPipelineOperator(PythonOperator, TransferPipelineXComs):
                     'others': json.dumps(provenance_details)})
 
                 provenance_step_id = visit(self.task_id, output_folder, provenance_id,
-                                           previous_step_id=self.previous_step_id(),
-                                           config={'boost': self.boost_provenance_scan,
-                                                   'sid_by_patient': self.session_id_by_patient})
+                                           previous_step_id=self.previous_step_id(), config=self.dataset_config)
                 self.pipeline_xcoms['provenance_previous_step_id'] = provenance_step_id
 
             self.write_pipeline_xcoms(context)
