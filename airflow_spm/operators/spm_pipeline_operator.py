@@ -215,7 +215,6 @@ class SpmPipelineOperator(PythonOperator, TransferPipelineXComs):
             logging.info(self.err.getvalue())
             logging.info("-----------")
 
-            valid = False
             try:
                 valid = self.validate_result_callable(
                     result_value, context['ti'].task_id)
@@ -232,6 +231,7 @@ class SpmPipelineOperator(PythonOperator, TransferPipelineXComs):
             if valid:
                 provenance_details = json.loads(self.pipeline_xcoms['provenance_details'])
                 provenance_details['spm_scripts'] = []
+                version = None
                 for path in self.matlab_paths:
                     try:
                         version = check_output('cd %s ; git describe --tags' % path, shell=True).strip()
@@ -242,17 +242,18 @@ class SpmPipelineOperator(PythonOperator, TransferPipelineXComs):
                     except CalledProcessError:
                         logging.warning('Cannot find the Git version on folder %s', path)
 
-                provenance_id = create_provenance(self.pipeline_xcoms['dataset'],
-                                                  matlab_version=self.pipeline_xcoms['matlab_version'],
-                                                  spm_version=self.pipeline_xcoms['spm_version'],
-                                                  spm_revision=self.pipeline_xcoms['spm_revision'],
-                                                  fn_called=self.spm_function,
-                                                  fn_version=version,
-                                                  others=json.dumps(provenance_details))
+                provenance_id = create_provenance(self.pipeline_xcoms['dataset'], software_versions={
+                    'matlab_version': self.pipeline_xcoms['matlab_version'],
+                    'spm_version': self.pipeline_xcoms['spm_version'],
+                    'spm_revision': self.pipeline_xcoms['spm_revision'],
+                    'fn_called': self.spm_function,
+                    'fn_version': version,
+                    'others': json.dumps(provenance_details)})
 
                 provenance_step_id = visit(self.task_id, output_folder, provenance_id,
                                            previous_step_id=self.previous_step_id(),
-                                           boost=self.boost_provenance_scan, sid_by_patient=self.session_id_by_patient)
+                                           config={'boost': self.boost_provenance_scan,
+                                                   'sid_by_patient': self.session_id_by_patient})
                 self.pipeline_xcoms['provenance_previous_step_id'] = provenance_step_id
 
             self.write_pipeline_xcoms(context)
