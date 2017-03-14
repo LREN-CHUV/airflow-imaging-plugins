@@ -1,6 +1,7 @@
 import logging
 
 from airflow.settings import Session
+from airflow import DagRun
 
 from datetime import datetime
 from textwrap import dedent
@@ -94,7 +95,7 @@ class TransferPipelineXComs(object):
             logging.warning("Write XCOM %s=%s", key, value)
             self.xcom_push(context, key=key, value=value)
 
-    def trigger_dag(self, context, dag_id, output, error = ''):
+    def trigger_dag(self, context, dag_id, output, error=''):
         if dag_id:
             run_id = 'trig__' + datetime.now().isoformat()
             payload = {

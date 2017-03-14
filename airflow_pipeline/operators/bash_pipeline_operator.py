@@ -45,7 +45,8 @@ class BashPipelineOperator(BashOperator, TransferPipelineXComs):
     :param output_folder_callable: A reference to an object that is callable.
         It should return the location of the output folder on the host containing the results of the computation.
     :type output_folder_callable: python callable
-    :param auto_cleanup_output_folder: When True, the output folder is automatically cleaned before execution and on error.
+    :param auto_cleanup_output_folder: When True, the output folder is automatically cleaned before
+        execution and on error.
     :type auto_cleanup_output_folder: bool
     :param parent_task: name of the parent task to use to locate XCom parameters
     :type parent_task: str

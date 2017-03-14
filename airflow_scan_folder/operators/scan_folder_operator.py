@@ -233,7 +233,9 @@ class ScanDailyFolderOperator(ScanFolderOperator):
             dataset=None,
             *args, **kwargs):
         super(ScanDailyFolderOperator, self).__init__(folder=folder, trigger_dag_id=trigger_dag_id,
-                                                 python_callable=python_callable, is_valid_session_id=is_valid_session_id, dataset=dataset, *args, **kwargs)
+                                                      python_callable=python_callable,
+                                                      is_valid_session_id=is_valid_session_id,
+                                                      dataset=dataset, *args, **kwargs)
         self.look_for_ready_marker_file = look_for_ready_marker_file
         self.ready_marker_file = ready_marker_file
 
@@ -260,7 +262,9 @@ class ScanDailyFolderOperator(ScanFolderOperator):
             if os.path.isdir(path):
 
                 ready_marker_file = os.path.join(path, self.ready_marker_file)
-                if self.is_valid_session_id(fname) and not self.look_for_ready_marker_file(daily_folder_date) or os.access(ready_marker_file, os.R_OK):
+                if self.is_valid_session_id(fname) \
+                   and not self.look_for_ready_marker_file(daily_folder_date) \
+                   or os.access(ready_marker_file, os.R_OK):
 
                     logging.info(
                         'Prepare trigger for preprocessing : %s', str(fname))

@@ -129,7 +129,7 @@ class FolderOperator(BaseOperator):
                 # Retry, while attempting to avoid too many collisions when
                 # backfilling a long backlog
                 self.offset = self.offset + random.randint(1, 10000)
-                self.trigger_dag_run(context, path, rel_daily_folder)
+                self.trigger_dag_run(context, path, rel_folder)
         else:
             logging.info("Criteria not met, moving on")
 
@@ -200,7 +200,7 @@ class FlatFolderOperator(FolderOperator):
                     path = os.path.join(folder, fname)
                     rel_path = "%s/%s" % (rel_folder, fname)
                     if os.path.isdir(path):
-                        self.scan_dirs(path, context, session=session, depth=depth+1, rel_folder=rel_path)
+                        self.scan_dirs(path, context, session=session, depth=depth + 1, rel_folder=rel_path)
 
 
 class DailyFolderOperator(FolderOperator):

@@ -40,7 +40,7 @@ class PythonPipelineOperator(PythonOperator, TransferPipelineXComs):
     :param parent_task: name of the parent task to use to locate XCom parameters
     :type parent_task: str
     """
-    template_fields = ('templates_dict','incoming_parameters',)
+    template_fields = ('templates_dict', 'incoming_parameters', )
     template_ext = tuple()
     ui_color = '#94A147'
 
