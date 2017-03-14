@@ -186,8 +186,6 @@ class FlatFolderOperator(FolderOperator):
 
         if not os.path.exists(folder):
             raise AirflowSkipException
-        if rel_folder == '.':
-            rel_folder = ''
 
         if depth == self.depth:
             logging.info(
@@ -195,6 +193,8 @@ class FlatFolderOperator(FolderOperator):
 
             self.trigger_dag_run(context, folder, rel_folder, session)
         else:
+            if rel_folder == '.':
+                rel_folder = ''
             for fname in os.listdir(folder):
                 if not (fname in ['.git', '.svn', '.tmp']):
                     path = os.path.join(folder, fname)
