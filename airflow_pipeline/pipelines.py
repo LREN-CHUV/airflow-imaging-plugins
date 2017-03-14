@@ -1,7 +1,7 @@
 import logging
 
 from airflow.settings import Session
-from airflow import DagRun
+from airflow.models import DagRun
 
 from datetime import datetime
 from textwrap import dedent
