@@ -18,7 +18,7 @@ import os
 from shutil import rmtree
 
 
-def default_output_folder(folder):
+def default_output_folder(folder, **kwargs):
     return folder
 
 
