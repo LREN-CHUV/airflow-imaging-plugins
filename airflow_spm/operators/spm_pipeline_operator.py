@@ -100,6 +100,7 @@ class SpmPipelineOperator(PythonOperator, TransferPipelineXComs):
         ID.
     :type dataset_config: dict
     """
+
     ui_color = '#c2560a'
     template_fields = ('incoming_parameters',)
     template_ext = tuple()

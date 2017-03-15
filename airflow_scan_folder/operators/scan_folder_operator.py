@@ -55,12 +55,16 @@ def default_trigger_dagrun(context, dag_run_obj):
 
 
 def roundUpTime(dt=None, dateDelta=timedelta(minutes=1)):
-    """Round a datetime object to a multiple of a timedelta
+
+    """
+    Round a datetime object to a multiple of a timedelta.
+
     dt : datetime.datetime object, default now.
     dateDelta : timedelta object, we round to a multiple of this, default 1 minute.
     Author: Thierry Husson 2012 - Use it as you want but don't blame me.
             Stijn Nevens 2014 - Changed to use only datetime objects as variables
     """
+
     roundTo = dateDelta.total_seconds()
 
     if dt is None:
@@ -72,9 +76,10 @@ def roundUpTime(dt=None, dateDelta=timedelta(minutes=1)):
 
 
 class ScanFolderOperator(BaseOperator):
+
     """
     Triggers a DAG run for a specified ``dag_id`` for each scan folder discovered
-    in a parent folder
+    in a parent folder.
 
     :param trigger_dag_id: the dag_id to trigger
     :type trigger_dag_id: str
@@ -95,6 +100,7 @@ class ScanFolderOperator(BaseOperator):
     :param dataset: name of the dataset
     :type dataset: str
     """
+
     template_fields = tuple()
     template_ext = tuple()
     ui_color = '#cceeeb'
@@ -191,6 +197,7 @@ class ScanFolderOperator(BaseOperator):
 
 
 class ScanDailyFolderOperator(ScanFolderOperator):
+
     """
     Triggers a DAG run for a specified ``dag_id`` for each scan folder discovered
     in a daily folder. The day is related to the ``execution_date`` given in the context
@@ -220,6 +227,7 @@ class ScanDailyFolderOperator(ScanFolderOperator):
     :param dataset: name of the dataset
     :type dataset: str
     """
+
     template_fields = tuple()
     template_ext = tuple()
     ui_color = '#bbefeb'

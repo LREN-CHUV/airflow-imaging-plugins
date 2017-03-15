@@ -24,7 +24,7 @@ except (IOError, RuntimeError, ImportError):
 class SpmOperator(PythonOperator):
 
     """
-    Executes SPM
+    Executes SPM.
 
     :param python_callable: A reference to an object that is callable.
         The 'engine' argument to the python function will be set as the Matlab engine to call.
@@ -52,6 +52,7 @@ class SpmOperator(PythonOperator):
         Matlab scripts containing the function to execute and their dependencies
     :type matlab_paths: list
     """
+
     ui_color = '#f2570a'
 
     @apply_defaults

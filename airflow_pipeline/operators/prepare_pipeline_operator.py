@@ -18,6 +18,7 @@ import json
 
 
 class PreparePipelineOperator(BaseOperator):
+
     """
     Prepare the pipeline by injecting additional information as XCOM messages.
 

@@ -24,6 +24,7 @@ def default_output_folder(folder, **kwargs):
 
 
 class BashPipelineOperator(BashOperator, TransferPipelineXComs):
+
     """
     A BashOperator that registers provenance information in the pipeline.
 
@@ -63,6 +64,7 @@ class BashPipelineOperator(BashOperator, TransferPipelineXComs):
         ID.
     :type dataset_config: dict
     """
+
     template_fields = ('incoming_parameters', 'bash_command', 'env')
     template_ext = tuple()
     ui_color = '#e9ffdb'  # nyanza
