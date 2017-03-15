@@ -1,11 +1,10 @@
 
 """
-
 .. module:: operators.python_pipeline_operator
+
     :synopsis: A PythonOperator that moves XCOM data used by the pipeline
 
 .. moduleauthor:: Ludovic Claude <ludovic.claude@chuv.ch>
-
 """
 
 

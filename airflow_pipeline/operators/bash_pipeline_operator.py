@@ -1,11 +1,10 @@
 
 """
-
 .. module:: operators.bash_pipeline_operator
+
     :synopsis: A BashOperator that registers provenance information the pipeline
 
 .. moduleauthor:: Ludovic Claude <ludovic.claude@chuv.ch>
-
 """
 
 

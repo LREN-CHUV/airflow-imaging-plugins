@@ -1,7 +1,7 @@
 
 """
-
 .. module:: operators.scan_folder_operator
+
     :synopsis: ScanFolderOperator to look for the list of folders containing scans starting from a parent folder
                and for each folder to trigger a pipeline DAG run.
                ScanDailyFolderOperator to look for the list of folders containing scans starting from
@@ -9,7 +9,6 @@
                for each folder to trigger a pipeline DAG run.
 
 .. moduleauthor:: Ludovic Claude <ludovic.claude@chuv.ch>
-
 """
 
 

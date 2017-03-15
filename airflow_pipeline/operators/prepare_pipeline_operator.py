@@ -1,11 +1,10 @@
 
 """
-
 .. module:: operators.prepare_pipeline_operator
+
     :synopsis: Operator that prepares the pipeline
 
 .. moduleauthor:: Ludovic Claude <ludovic.claude@chuv.ch>
-
 """
 
 

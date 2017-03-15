@@ -1,11 +1,10 @@
 
 """
-
 .. module:: operators.spm_operator
+
     :synopsis: Operator that executes SPM via Matlab Python engine: SpmOperator
 
 .. moduleauthor:: Ludovic Claude <ludovic.claude@chuv.ch>
-
 """
 
 

@@ -1,14 +1,13 @@
 
 """
-
 .. module:: operators.folder_operator
+
     :synopsis: DailyFolderOperator triggers a DAG run for a specified ``dag_id`` for the daily
                folder matching path root_folder/yyyy/yyyyMMdd where the date used is the execution date.
                FlatFolderOperator triggers a DAG run for a specified ``dag_id`` for each folder discovered
                in a parent folder.
 
 .. moduleauthor:: Ludovic Claude <ludovic.claude@chuv.ch>
-
 """
 
 
