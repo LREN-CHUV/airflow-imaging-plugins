@@ -16,11 +16,9 @@ PIPELINE_XCOMS = ['folder', 'session_id', 'participant_id',
 
 
 def pipeline_trigger(parent_task):
-
     """Generates a trigger function attached to a parent task."""
 
     def trigger(context, dag_run_obj):
-
         """
         Trigger function.
 
