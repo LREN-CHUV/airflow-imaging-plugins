@@ -142,8 +142,7 @@ class FolderOperator(BaseOperator):
 class FlatFolderOperator(FolderOperator):
 
     """
-    Triggers a DAG run for a specified ``dag_id`` for each folder discovered
-    in a parent folder.
+    Triggers a DAG run for a specified ``dag_id`` for each folder discovered in a parent folder.
 
     :param folder: root folder
     :type folder: str
@@ -213,8 +212,10 @@ class FlatFolderOperator(FolderOperator):
 class DailyFolderOperator(FolderOperator):
 
     """
-    Triggers a DAG run for a specified ``dag_id`` for the daily folder matching path
-    root_folder/yyyy/yyyyMMdd where the date used is the execution date.
+    Triggers a DAG run for a specified ``dag_id`` for the daily folder.
+
+    The daily folder should match path root_folder/yyyy/yyyyMMdd where the date
+    used is the execution date.
 
     :param folder: root folder
     :type folder: str

@@ -16,15 +16,16 @@ PIPELINE_XCOMS = ['folder', 'session_id', 'participant_id',
 
 
 def pipeline_trigger(parent_task):
-    """
-      Use this function with TriggerDagRunOperator to always trigger a DAG and
-      pass pipeline information to the next DAG
-    """
+
+    """Generates a trigger function attached to a parent task."""
 
     def trigger(context, dag_run_obj):
+
         """
-          Use this function with TriggerDagRunOperator to always trigger a DAG and
-          pass pipeline information to the next DAG
+        Trigger function.
+
+        Use this function with TriggerDagRunOperator to always trigger a DAG and
+        pass pipeline information to the next DAG
         """
 
         ti = context['task_instance']

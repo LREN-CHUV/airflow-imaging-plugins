@@ -77,8 +77,7 @@ def round_up_time(dt=None, date_delta=timedelta(minutes=1)):
 class ScanFolderOperator(BaseOperator):
 
     """
-    Triggers a DAG run for a specified ``dag_id`` for each scan folder discovered
-    in a parent folder.
+    Triggers a DAG run for a specified ``dag_id`` for each scan folder discovered in a parent folder.
 
     :param trigger_dag_id: the dag_id to trigger
     :type trigger_dag_id: str
@@ -198,9 +197,9 @@ class ScanFolderOperator(BaseOperator):
 class ScanDailyFolderOperator(ScanFolderOperator):
 
     """
-    Triggers a DAG run for a specified ``dag_id`` for each scan folder discovered
-    in a daily folder. The day is related to the ``execution_date`` given in the context
-    of the DAG.
+    Triggers a DAG run for a specified ``dag_id`` for each scan folder discovered in a daily folder.
+
+    The day is related to the ``execution_date`` given in the context of the DAG.
 
     :param trigger_dag_id: the dag_id to trigger
     :type trigger_dag_id: str
