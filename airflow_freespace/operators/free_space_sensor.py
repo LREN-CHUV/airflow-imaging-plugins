@@ -15,6 +15,7 @@ from airflow.utils import apply_defaults
 
 
 class FreeSpaceSensor(BaseSensorOperator):
+
     """
     Waits until there is enough free space on the disk.
 

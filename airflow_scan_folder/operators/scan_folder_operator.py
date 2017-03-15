@@ -54,7 +54,7 @@ def default_trigger_dagrun(context, dag_run_obj):
         return dag_run_obj
 
 
-def roundUpTime(dt=None, dateDelta=timedelta(minutes=1)):
+def round_up_time(dt=None, date_delta=timedelta(minutes=1)):
     """
     Round a datetime object to a multiple of a timedelta.
 
@@ -64,17 +64,18 @@ def roundUpTime(dt=None, dateDelta=timedelta(minutes=1)):
             Stijn Nevens 2014 - Changed to use only datetime objects as variables
     """
 
-    roundTo = dateDelta.total_seconds()
+    round_to = date_delta.total_seconds()
 
     if dt is None:
         dt = datetime.now()
     seconds = (dt - dt.min).seconds
     # rounding up, // is a floor division, not a comment on following line:
-    rounding = (seconds + roundTo) // roundTo * roundTo
+    rounding = (seconds + round_to) // round_to * round_to
     return dt + timedelta(0, rounding - seconds, -dt.microsecond)
 
 
 class ScanFolderOperator(BaseOperator):
+
     """
     Triggers a DAG run for a specified ``dag_id`` for each scan folder discovered
     in a parent folder.
@@ -152,7 +153,7 @@ class ScanFolderOperator(BaseOperator):
         context_params['dataset'] = self.dataset
 
         while True:
-            dr_time = roundUpTime(datetime.now() - timedelta(minutes=self.offset))
+            dr_time = round_up_time(datetime.now() - timedelta(minutes=self.offset))
             run_id = "trig__{0}".format(dr_time.isoformat())
             dr = session.query(DagRun).filter(
                 DagRun.dag_id == self.trigger_dag_id, DagRun.run_id == run_id).first()
@@ -195,6 +196,7 @@ class ScanFolderOperator(BaseOperator):
 
 
 class ScanDailyFolderOperator(ScanFolderOperator):
+
     """
     Triggers a DAG run for a specified ``dag_id`` for each scan folder discovered
     in a daily folder. The day is related to the ``execution_date`` given in the context

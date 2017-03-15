@@ -45,6 +45,7 @@ def default_output_folder(folder):
 
 
 class SpmPipelineOperator(PythonOperator, TransferPipelineXComs):
+
     """
     Executes a pipeline on SPM, where a 'pipeline' is a function implemented in SPM.
 

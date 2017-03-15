@@ -24,6 +24,7 @@ def default_output_folder(folder, **kwargs):
 
 
 class BashPipelineOperator(BashOperator, TransferPipelineXComs):
+
     """
     A BashOperator that registers provenance information in the pipeline.
 

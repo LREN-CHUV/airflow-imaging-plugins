@@ -22,6 +22,7 @@ except (IOError, RuntimeError, ImportError):
 
 
 class SpmOperator(PythonOperator):
+
     """
     Executes SPM.
 

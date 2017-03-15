@@ -16,6 +16,7 @@ import logging
 
 
 class PythonPipelineOperator(PythonOperator, TransferPipelineXComs):
+
     """
     A PythonOperator that moves XCOM data used by the pipeline.
 

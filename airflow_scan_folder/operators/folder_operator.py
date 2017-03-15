@@ -27,7 +27,7 @@ from airflow.exceptions import AirflowSkipException
 from airflow.utils.db import provide_session
 from sqlalchemy.exc import IntegrityError
 
-from .scan_folder_operator import default_look_for_ready_marker_file, roundUpTime
+from .scan_folder_operator import default_look_for_ready_marker_file, round_up_time
 
 
 def default_trigger_dagrun(context, dag_run_obj):
@@ -47,6 +47,7 @@ def default_trigger_dagrun(context, dag_run_obj):
 
 
 class FolderOperator(BaseOperator):
+
     """
     Abstract base class for other FolderOperators.
 
@@ -96,7 +97,7 @@ class FolderOperator(BaseOperator):
         context_params['relative_context_path'] = rel_folder
 
         while True:
-            dr_time = roundUpTime(datetime.now() - timedelta(minutes=self.offset))
+            dr_time = round_up_time(datetime.now() - timedelta(minutes=self.offset))
             run_id = "trig__{0}".format(dr_time.isoformat())
             dr = session.query(DagRun).filter(
                 DagRun.dag_id == self.trigger_dag_id, DagRun.run_id == run_id).first()
@@ -139,6 +140,7 @@ class FolderOperator(BaseOperator):
 
 
 class FlatFolderOperator(FolderOperator):
+
     """
     Triggers a DAG run for a specified ``dag_id`` for each folder discovered
     in a parent folder.
@@ -209,6 +211,7 @@ class FlatFolderOperator(FolderOperator):
 
 
 class DailyFolderOperator(FolderOperator):
+
     """
     Triggers a DAG run for a specified ``dag_id`` for the daily folder matching path
     root_folder/yyyy/yyyyMMdd where the date used is the execution date.
