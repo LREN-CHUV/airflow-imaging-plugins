@@ -1,10 +1,13 @@
 
 """
+
 .. module:: operators.docker_pipeline_operator
     :synopsis: A DockerOperator that registers provenance information in the pipeline
 
 .. moduleauthor:: Ludovic Claude <ludovic.claude@chuv.ch>
+
 """
+
 
 from airflow.operators.docker_operator import DockerOperator
 from airflow.utils import apply_defaults

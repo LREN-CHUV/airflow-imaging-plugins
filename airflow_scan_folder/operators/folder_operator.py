@@ -1,4 +1,6 @@
+
 """
+
 .. module:: operators.folder_operator
     :synopsis: DailyFolderOperator triggers a DAG run for a specified ``dag_id`` for the daily
                folder matching path root_folder/yyyy/yyyyMMdd where the date used is the execution date.
@@ -6,7 +8,9 @@
                in a parent folder.
 
 .. moduleauthor:: Ludovic Claude <ludovic.claude@chuv.ch>
+
 """
+
 
 import logging
 import random

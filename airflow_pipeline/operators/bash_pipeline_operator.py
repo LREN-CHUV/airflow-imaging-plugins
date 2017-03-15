@@ -1,10 +1,13 @@
 
 """
+
 .. module:: operators.bash_pipeline_operator
-    :synopsis: A BashOperator that that registers provenance information the pipeline
+    :synopsis: A BashOperator that registers provenance information the pipeline
 
 .. moduleauthor:: Ludovic Claude <ludovic.claude@chuv.ch>
+
 """
+
 
 from airflow.operators.bash_operator import BashOperator
 from airflow.utils import apply_defaults

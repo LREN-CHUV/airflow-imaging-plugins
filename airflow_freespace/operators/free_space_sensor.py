@@ -1,3 +1,13 @@
+
+"""
+
+.. module:: operators.free_space_sensor
+    :synopsis: A SensorOperator that waits until there is enough free space on the disk
+
+.. moduleauthor:: Ludovic Claude <ludovic.claude@chuv.ch>
+
+"""
+
 import os
 import logging
 
