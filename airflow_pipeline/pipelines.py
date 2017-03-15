@@ -26,6 +26,7 @@ def pipeline_trigger(parent_task):
           Use this function with TriggerDagRunOperator to always trigger a DAG and
           pass pipeline information to the next DAG
         """
+
         ti = context['task_instance']
         dr = context['dag_run']
         dag_run_obj.payload = {}

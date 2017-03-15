@@ -48,7 +48,7 @@ def default_trigger_dagrun(context, dag_run_obj):
 
 class FolderOperator(BaseOperator):
     """
-    Abstract base class for other FolderOperators
+    Abstract base class for other FolderOperators.
 
     :param folder: root folder
     :type folder: str
@@ -67,6 +67,7 @@ class FolderOperator(BaseOperator):
     :param dataset: name of the dataset
     :type dataset: str
     """
+
     template_fields = tuple()
     template_ext = tuple()
 
@@ -140,7 +141,7 @@ class FolderOperator(BaseOperator):
 class FlatFolderOperator(FolderOperator):
     """
     Triggers a DAG run for a specified ``dag_id`` for each folder discovered
-    in a parent folder
+    in a parent folder.
 
     :param folder: root folder
     :type folder: str
@@ -161,6 +162,7 @@ class FlatFolderOperator(FolderOperator):
     :param depth: Depth of folders to traverse. Default: 1
     :type depth: int
     """
+
     template_fields = tuple()
     template_ext = tuple()
     ui_color = '#cceeeb'
@@ -233,6 +235,7 @@ class DailyFolderOperator(FolderOperator):
         False otherwise
     :type look_for_ready_marker_file: python callable
     """
+
     template_fields = tuple()
     template_ext = tuple()
     ui_color = '#cceeeb'

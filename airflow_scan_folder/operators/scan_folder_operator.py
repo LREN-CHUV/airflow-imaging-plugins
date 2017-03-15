@@ -55,7 +55,6 @@ def default_trigger_dagrun(context, dag_run_obj):
 
 
 def roundUpTime(dt=None, dateDelta=timedelta(minutes=1)):
-
     """
     Round a datetime object to a multiple of a timedelta.
 
@@ -76,7 +75,6 @@ def roundUpTime(dt=None, dateDelta=timedelta(minutes=1)):
 
 
 class ScanFolderOperator(BaseOperator):
-
     """
     Triggers a DAG run for a specified ``dag_id`` for each scan folder discovered
     in a parent folder.
@@ -197,7 +195,6 @@ class ScanFolderOperator(BaseOperator):
 
 
 class ScanDailyFolderOperator(ScanFolderOperator):
-
     """
     Triggers a DAG run for a specified ``dag_id`` for each scan folder discovered
     in a daily folder. The day is related to the ``execution_date`` given in the context

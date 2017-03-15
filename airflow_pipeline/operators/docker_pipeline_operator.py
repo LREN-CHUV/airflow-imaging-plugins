@@ -24,7 +24,6 @@ def default_output_folder(folder, **kwargs):
 
 
 class DockerPipelineOperator(DockerOperator, TransferPipelineXComs):
-
     """
     A DockerOperator that registers provenance information in the pipeline.
 

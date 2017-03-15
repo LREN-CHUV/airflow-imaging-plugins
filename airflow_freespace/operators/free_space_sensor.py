@@ -23,6 +23,7 @@ class FreeSpaceSensor(BaseSensorOperator):
     :param free_disk_threshold: minimum percentage of free disk
     :type free_disk_threshold: float
     """
+
     template_fields = tuple()
 
     @apply_defaults
