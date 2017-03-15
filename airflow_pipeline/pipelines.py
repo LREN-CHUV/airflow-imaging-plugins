@@ -6,6 +6,9 @@ from airflow.models import DagRun
 from datetime import datetime
 from textwrap import dedent
 
+from mri_meta_extract.files_recording import create_provenance, visit
+
+
 PIPELINE_XCOMS = ['folder', 'session_id', 'participant_id',
                   'scan_date', 'output', 'error', 'dataset',
                   'matlab_version', 'spm_version', 'spm_revision', 'provenance_details',
@@ -38,8 +41,9 @@ def pipeline_trigger(parent_task):
 
 class TransferPipelineXComs(object):
 
-    def __init__(self, parent_task):
+    def __init__(self, parent_task, dataset_config):
         self.parent_task = parent_task
+        self.dataset_config = dataset_config
         self.pipeline_xcoms = {}
         self.incoming_parameters = dedent("""
           # Task {{ task.task_id }}
@@ -94,6 +98,14 @@ class TransferPipelineXComs(object):
         for key, value in self.pipeline_xcoms.items():
             logging.warning("Write XCOM %s=%s", key, value)
             self.xcom_push(context, key=key, value=value)
+
+    def track_provenance(self, output_folder, software_versions=None):
+        provenance_id = create_provenance(self.pipeline_xcoms['dataset'], software_versions=software_versions)
+
+        provenance_step_id = visit(self.task_id, output_folder, provenance_id,
+                                   previous_step_id=self.previous_step_id(),
+                                   config=self.dataset_config)
+        self.pipeline_xcoms['provenance_previous_step_id'] = provenance_step_id
 
     def trigger_dag(self, context, dag_id, output, error=''):
         if dag_id:

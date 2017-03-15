@@ -64,7 +64,7 @@ class PythonPipelineOperator(PythonOperator, TransferPipelineXComs):
                                 templates_dict=templates_dict,
                                 templates_exts=templates_exts,
                                 *args, **kwargs)
-        TransferPipelineXComs.__init__(self, parent_task)
+        TransferPipelineXComs.__init__(self, parent_task, None)
 
     def pre_execute(self, context):
         self.read_pipeline_xcoms(context)

@@ -10,7 +10,6 @@ from airflow.operators.docker_operator import DockerOperator
 from airflow.utils import apply_defaults
 from airflow.exceptions import AirflowException
 from airflow_pipeline.pipelines import TransferPipelineXComs
-from mri_meta_extract.files_recording import create_provenance, visit
 
 import logging
 import os
@@ -147,13 +146,11 @@ class DockerPipelineOperator(DockerOperator, TransferPipelineXComs):
                                 xcom_push=xcom_push,
                                 xcom_all=xcom_all,
                                 *args, **kwargs)
-        TransferPipelineXComs.__init__(self, parent_task)
+        TransferPipelineXComs.__init__(self, parent_task, dataset_config)
         self.container_input_dir = container_input_dir
         self.container_output_dir = container_output_dir
         self.output_folder_callable = output_folder_callable
         self.on_failure_trigger_dag_id = on_failure_trigger_dag_id
-        self.dataset_config = dataset_config
-        self.provenance_previous_step_id = None
 
     def pre_execute(self, context):
         self.read_pipeline_xcoms(context, expected=[
@@ -206,13 +203,9 @@ class DockerPipelineOperator(DockerOperator, TransferPipelineXComs):
         else:
             image, version = self.image.split(':')
 
-        provenance_id = create_provenance(self.pipeline_xcoms['dataset'], software_versions={
-            'fn_called': image, 'fn_version': version, 'others': '{"docker_image"="%s:%s"}' % (image, version)})
-
-        provenance_step_id = visit(self.task_id, host_output_dir, provenance_id,
-                                   previous_step_id=self.previous_step_id(),
-                                   config=self.dataset_config)
-        self.pipeline_xcoms['provenance_previous_step_id'] = provenance_step_id
+        software_versions = {'fn_called': image, 'fn_version': version,
+                             'others': '{"docker_image"="%s:%s"}' % (image, version)}
+        self.track_provenance(host_output_dir, software_versions)
 
         self.write_pipeline_xcoms(context)
 
