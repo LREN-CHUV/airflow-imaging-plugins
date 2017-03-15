@@ -6,8 +6,6 @@ pep8:
   full: true
   disable:
     - E402  # module level import not at top of file
-uses:
-  - flask
 pylint:
   disable:
     - broad-except
@@ -19,7 +17,7 @@ pylint:
     - wrong-import-position
     - logging-format-interpolation
   options:
-docstring-min-length: 10
+    docstring-min-length: 10
 autodetect: true
 python-targets:
   - 3
