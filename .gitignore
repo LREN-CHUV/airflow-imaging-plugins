@@ -1,3 +1,14 @@
+### Custom
+# IDE
+.idea/
+# Others
+*.pyc
+
+# Slack
+.slack.json
+.slack.json.bak
+
+### Python template
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -67,7 +78,7 @@ docs/_build/
 # PyBuilder
 target/
 
-# IPython Notebook
+# Jupyter Notebook
 .ipynb_checkpoints
 
 # pyenv
@@ -80,6 +91,7 @@ celerybeat-schedule
 .env
 
 # virtualenv
+.venv/
 venv/
 ENV/
 
@@ -89,11 +101,7 @@ ENV/
 # Rope project settings
 .ropeproject
 
-## Pycharm
-
-# Created by https://www.gitignore.io/api/pycharm
-
-### PyCharm ###
+### JetBrains template
 # Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion, Android Studio and Webstorm
 # Reference: https://intellij-support.jetbrains.com/hc/en-us/articles/206544839
 
@@ -102,6 +110,7 @@ ENV/
 .idea/tasks.xml
 
 # Sensitive or high-churn files:
+.idea/dataSources/
 .idea/dataSources.ids
 .idea/dataSources.xml
 .idea/dataSources.local.xml

@@ -16,6 +16,6 @@ test:
     - pip install python-magic
     - pip install nibabel
   override:
-  - pre-commit install
-  - pre-commit run --all-files
-  - cd ./tests && ./test.sh
+    - pre-commit install
+    - pre-commit run --all-files
+    - cd ./tests && ./test.sh
