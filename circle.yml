@@ -1,0 +1,21 @@
+machine:
+  python:
+    version: 3.6.0
+  services:
+    - docker
+dependencies:
+  override:
+    - docker info
+    - pip install pre-commit ansible-lint
+test:
+  pre:
+    - pip install psycopg2
+    - pip install airflow
+    - pip install pydicom
+    - pip install sqlalchemy
+    - pip install python-magic
+    - pip install nibabel
+  override:
+  - pre-commit install
+  - pre-commit run --all-files
+  - cd ./tests && ./test.sh
