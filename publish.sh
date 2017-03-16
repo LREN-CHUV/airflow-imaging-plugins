@@ -51,6 +51,9 @@ git describe --exact-match > /dev/null || (
 git push
 git push --tags
 
+# Build again to update the version
+./build.sh
+
 # Push on PyPi
 twine upload dist/*
 
