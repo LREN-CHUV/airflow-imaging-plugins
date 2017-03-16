@@ -16,17 +16,17 @@ select_part() {
   local choice=$1
   case "$choice" in
       "Patch release")
-          bumpversion --tag patch
+          bumpversion patch
           ;;
       "Minor release")
-          bumpversion --tag minor
+          bumpversion minor
           ;;
       "Major release")
-          bumpversion --tag major
+          bumpversion major
           ;;
       *)
           read -p "Version > " version
-          bumpversion --tag --new_version=$version $part
+          bumpversion --new_version=$version $part
           ;;
   esac
 }
