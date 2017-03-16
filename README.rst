@@ -1,4 +1,4 @@
-|License| |Codacy Badge| |Code Health|
+|License| |Codacy Badge| |Code Health| |PyPI|
 
 Airflow Imaging plugins
 =======================
@@ -72,3 +72,5 @@ Airflow setup for MRI scans pipeline:
    :target: https://www.codacy.com/app/hbp-mip/airflow-imaging-plugins?utm_source=github.com&utm_medium=referral&utm_content=LREN-CHUV/airflow-imaging-plugins&utm_campaign=Badge_Grade
 .. |Code Health| image:: https://landscape.io/github/LREN-CHUV/airflow-imaging-plugins/master/landscape.svg?style=flat
    :target: https://landscape.io/github/LREN-CHUV/airflow-imaging-plugins/master
+.. |PyPI| image:: https://img.shields.io/pypi/v/airflow-imaging-plugins.svg
+   :target: https://pypi.python.org/pypi/airflow-imaging-plugins/
