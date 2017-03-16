@@ -101,8 +101,7 @@ class TransferPipelineXComs(object):
 
     def track_provenance(self, output_folder, software_versions=None):
         provenance_id = create_provenance(self.pipeline_xcoms['dataset'], software_versions=software_versions)
-
-        provenance_step_id = visit(self.task_id, output_folder, provenance_id,
+        provenance_step_id = visit(output_folder, provenance_id, self.task_id,
                                    previous_step_id=self.previous_step_id(),
                                    config=self.dataset_config)
         self.pipeline_xcoms['provenance_previous_step_id'] = provenance_step_id
