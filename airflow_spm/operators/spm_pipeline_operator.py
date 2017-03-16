@@ -9,7 +9,6 @@
 """
 
 
-from airflow import configuration
 from airflow.operators.python_operator import PythonOperator
 from airflow.utils import apply_defaults
 from airflow.exceptions import AirflowSkipException
@@ -25,11 +24,6 @@ from shutil import rmtree
 from io import StringIO
 from subprocess import CalledProcessError
 from subprocess import check_output
-
-try:
-    import matlab.engine
-except (IOError, RuntimeError, ImportError):
-    logging.error('Matlab not available on this node')
 
 
 def default_validate_result(return_value, task_id):
@@ -145,18 +139,7 @@ class SpmPipelineOperator(PythonOperator, TransferPipelineXComs):
         self.provenance_previous_step_id = None
 
     def pre_execute(self, context):
-        spm_dir = str(configuration.get('spm', 'SPM_DIR'))
-        if matlab.engine:
-            self.engine = matlab.engine.start_matlab()
-        if self.engine:
-            if self.matlab_paths:
-                for path in self.matlab_paths:
-                    self.engine.addpath(path)
-            self.engine.addpath(spm_dir)
-        else:
-            msg = 'Matlab has not started on this node'
-            logging.error(msg)
-            raise SPMError(msg)
+        super(SpmPipelineOperator, self).pre_execute(context)
         self.read_pipeline_xcoms(context, expected=[
                                  'folder', 'session_id', 'participant_id', 'scan_date',
                                  'dataset', 'matlab_version', 'spm_version', 'spm_revision',
