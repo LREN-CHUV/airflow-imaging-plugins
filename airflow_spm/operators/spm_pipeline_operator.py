@@ -131,7 +131,7 @@ class SpmPipelineOperator(PythonOperator, TransferPipelineXComs):
                                 templates_dict=templates_dict,
                                 templates_exts=templates_exts,
                                 *args, **kwargs)
-        TransferPipelineXComs.__init__(self, parent_task)
+        TransferPipelineXComs.__init__(self, parent_task, dataset_config)
 
         self.spm_function = spm_function
         self.matlab_paths = matlab_paths
@@ -139,7 +139,6 @@ class SpmPipelineOperator(PythonOperator, TransferPipelineXComs):
         self.output_folder_callable = output_folder_callable
         self.on_skip_trigger_dag_id = on_skip_trigger_dag_id
         self.on_failure_trigger_dag_id = on_failure_trigger_dag_id
-        self.dataset_config = dataset_config
         self.engine = None
         self.out = None
         self.err = None

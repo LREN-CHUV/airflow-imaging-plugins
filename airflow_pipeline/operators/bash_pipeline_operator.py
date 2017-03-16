@@ -89,7 +89,7 @@ class BashPipelineOperator(BashOperator, TransferPipelineXComs):
                               env=env or {},
                               output_encoding=output_encoding,
                               *args, **kwargs)
-        TransferPipelineXComs.__init__(self, parent_task, dataset_config=dataset_config)
+        TransferPipelineXComs.__init__(self, parent_task, dataset_config)
         self.output_folder_callable = output_folder_callable
         self.auto_cleanup_output_folder = auto_cleanup_output_folder
         self.on_failure_trigger_dag_id = on_failure_trigger_dag_id
