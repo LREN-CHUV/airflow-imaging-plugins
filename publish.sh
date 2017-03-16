@@ -12,11 +12,36 @@ if test $count -gt 0; then
   exit 1
 fi
 
+select_part() {
+  local choice=$1
+  case "$choice" in
+      "Patch release*")
+          part='patch'
+          ;;
+      "Minor release*")
+          part='minor'
+          ;;
+      "Major release*")
+          part='major'
+          ;;
+      *)
+          read -p "Version > " part
+          ;;
+  esac
+}
+
 # Look for a version tag in Git. If not found, ask the user to provide one
 git describe --exact-match > /dev/null || (
-  echo "The latest commit has not been tagged with a version. Please enter the version for this release."
-  read -p "Version > " version
-  git tag -a -m "PyPi release $version" $version
+  latest_version=$(git describe --abbrev=0)
+  echo "Current commit has not been tagged with a version. Latest known version is $latest_version."
+  PS3='What do you want to release?'
+  options=("Patch release (increments version to x.x.N)" "Minor release (increments version to x.N)" "Major release (increments to N.0)" "Release with a custom version")
+  select choice in "${options[@]}";
+  do
+    select_part "$choice"
+    break
+  done
+  bumpversion --tag --tag-name 'PyPI release {new_version}' $part
 )
 
 git push
