@@ -6,9 +6,6 @@ pep8:
   full: true
   disable:
     - E402  # module level import not at top of file
-pep257:
-  disable:
-    - D211
 pylint:
   disable:
     - broad-except
