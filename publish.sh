@@ -16,17 +16,17 @@ select_part() {
   local choice=$1
   case "$choice" in
       "Patch release")
-          bumpversion --tag --tag-name 'PyPI release {new_version}' patch
+          bumpversion --tag patch
           ;;
       "Minor release")
-          bumpversion --tag --tag-name 'PyPI release {new_version}' minor
+          bumpversion --tag minor
           ;;
       "Major release")
-          bumpversion --tag --tag-name 'PyPI release {new_version}' major
+          bumpversion --tag major
           ;;
       *)
           read -p "Version > " version
-          bumpversion --tag --tag-name 'PyPI release {new_version}' --new_version=$version $part
+          bumpversion --tag --new_version=$version $part
           ;;
   esac
 }
@@ -43,7 +43,9 @@ git describe --exact-match > /dev/null || (
     select_part "$choice"
     break
   done
-  bumpversion --tag --tag-name 'PyPI release {new_version}' $part
+  new_version=$(bumpversion --dry-run --list patch | grep current_version | sed -r s,"^.*=",,)
+  # Bumpversion v0.5.3 does not support annotated tags
+  git tag -a -m "PyPi release $new_version" $new_version
 )
 
 git push
