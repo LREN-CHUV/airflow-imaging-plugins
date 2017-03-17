@@ -172,6 +172,7 @@ class DockerPipelineOperator(DockerOperator, TransferPipelineXComs):
         try:
             if os.path.exists(host_output_dir):
                 os.removedirs(host_output_dir)
+            os.makedirs(host_output_dir)
         except Exception:
             logging.error("Cannot cleanup output directory %s before executing Docker container %s",
                           host_output_dir, self.image)
