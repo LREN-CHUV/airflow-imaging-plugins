@@ -35,9 +35,9 @@ code_quality_checks:
     link: https://landscape.io/github/LREN-CHUV/airflow-imaging-plugins/master
 
 release_management:
-  current_version: 0.4.0
-  current_code_release: https://github.com/HBPMedical/airflow-imaging-plugins/archive/0.4.0.zip
-  current_binary_release: https://pypi.python.org/pypi/airflow-imaging-plugins/0.4.0
+  current_version: 0.4.1
+  current_code_release: https://github.com/HBPMedical/airflow-imaging-plugins/archive/0.4.1.zip
+  current_binary_release: https://pypi.python.org/pypi/airflow-imaging-plugins/0.4.1
 
 continuous_integration: []
 
