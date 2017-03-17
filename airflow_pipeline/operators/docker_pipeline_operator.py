@@ -95,7 +95,7 @@ class DockerPipelineOperator(DockerOperator, TransferPipelineXComs):
     :type on_failure_trigger_dag_id: str
     """
 
-    template_fields = ('incoming_parameters', 'command',)
+    template_fields = ('incoming_parameters', 'command', 'volumes')
     template_ext = ('.sh', '.bash',)
     ui_color = '#e9ffdb'  # nyanza
 
