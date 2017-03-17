@@ -1,0 +1,49 @@
+authors:
+  - organisation: LREN-CHUV
+    organisation_badge: https://img.shields.io/badge/CHUV-LREN-AF4C64.svg
+
+platform: MIP
+component:
+  mip_building_block: data-factory
+  nature: plugin
+
+license:
+  name: Apache 2.0
+  badge: https://img.shields.io/badge/license-Apache--2.0-blue.svg
+  link: https://github.com/LREN-CHUV/airflow-imaging-plugins/blob/master/LICENSE
+
+code_repositories:
+  - name: chuv-gitlab/HBPMedical
+    visibility: private
+    link: https://___.chuv.ch/data-factory/airflow-imaging-plugins/
+    git_clone: https://___.chuv.ch/data-factory/airflow-imaging-plugins.git
+  - name: github/LREN-CHUV
+    visibility: public
+    link: https://github.io/LREN-CHUV/airflow-imaging-plugins/
+    git_clone: https://github.io/LREN-CHUV/airflow-imaging-plugins.git
+  - name: github/HBPMedical
+    visibility: public
+    link: https://github.io/HBPMedical/airflow-imaging-plugins/
+    git_clone: https://github.io/HBPMedical/airflow-imaging-plugins.git
+
+code_quality_checks:
+  codacy:
+    badge: https://api.codacy.com/project/badge/Grade/7a9c796392e4420495ee1fabd0fce9ae
+    link: "https://www.codacy.com/app/hbp-mip/airflow-imaging-plugins?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=LREN-CHUV/airflow-imaging-plugins&amp;utm_campaign=Badge_Grade"
+  landscape:
+    badge: "https://landscape.io/github/LREN-CHUV/airflow-imaging-plugins/master/landscape.svg?style=flat"
+    link: https://landscape.io/github/LREN-CHUV/airflow-imaging-plugins/master
+
+release_management:
+  current_version: 0.4.0
+  current_code_release: https://github.com/HBPMedical/airflow-imaging-plugins/archive/0.4.0.zip
+  current_binary_release: https://pypi.python.org/pypi/airflow-imaging-plugins/0.4.0
+
+continuous_integration: []
+
+distribution:
+  pypi:
+    badge: https://img.shields.io/pypi/v/airflow-imaging-plugins.svg
+    link: https://pypi.python.org/pypi/airflow-imaging-plugins/
+
+planning: []
