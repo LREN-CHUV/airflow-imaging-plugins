@@ -34,10 +34,14 @@ code_quality_checks:
     badge: "https://landscape.io/github/LREN-CHUV/airflow-imaging-plugins/master/landscape.svg?style=flat"
     link: https://landscape.io/github/LREN-CHUV/airflow-imaging-plugins/master
 
+testing:
+  unit_testing: []
+
 release_management:
   current_version: 0.4.1
   current_code_release: https://github.com/HBPMedical/airflow-imaging-plugins/archive/0.4.1.zip
   current_binary_release: https://pypi.python.org/pypi/airflow-imaging-plugins/0.4.1
+  release_script: 'publish.sh'
 
 continuous_integration: []
 
