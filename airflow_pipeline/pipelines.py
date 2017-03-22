@@ -6,7 +6,7 @@ from airflow.models import DagRun
 from datetime import datetime
 from textwrap import dedent
 
-from mri_meta_extract.files_recording import create_provenance, visit
+from data_tracking.files_recording import create_provenance, visit
 
 
 PIPELINE_XCOMS = ['folder', 'session_id', 'participant_id',

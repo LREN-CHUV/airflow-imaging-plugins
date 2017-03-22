@@ -14,7 +14,7 @@ from airflow.utils import apply_defaults
 from airflow.exceptions import AirflowSkipException
 from airflow_spm.errors import SPMError
 from airflow_pipeline.pipelines import TransferPipelineXComs
-from mri_meta_extract.files_recording import create_provenance, visit
+from data_tracking.files_recording import create_provenance, visit
 
 import logging
 import os

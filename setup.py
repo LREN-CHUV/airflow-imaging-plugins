@@ -24,7 +24,7 @@ _classifiers = (
 
 _install_requires = [
     'airflow>=1.7.0',
-    'mri_meta_extract>=1.4.5'
+    'data_tracking>=1.5.3'
 ]
 
 setup(
