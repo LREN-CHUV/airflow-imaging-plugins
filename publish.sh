@@ -3,7 +3,9 @@
 set -e
 
 # Build
+echo "Build the project..."
 ./build.sh
+echo "[ok] Done"
 
 count=$(git status --porcelain | wc -l)
 if test $count -gt 0; then
@@ -31,6 +33,7 @@ select_part() {
   esac
 }
 
+git pull --tags
 # Look for a version tag in Git. If not found, ask the user to provide one
 git describe --exact-match > /dev/null || (
   latest_version=$(git describe --abbrev=0)
