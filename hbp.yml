@@ -42,9 +42,9 @@ testing:
   unit_testing: []
 
 release_management:
-  current_version: 0.4.3
-  current_code_release: https://github.com/HBPMedical/airflow-imaging-plugins/archive/0.4.3.zip
-  current_binary_release: https://pypi.python.org/pypi/airflow-imaging-plugins/0.4.3
+  current_version: 0.4.4
+  current_code_release: https://github.com/HBPMedical/airflow-imaging-plugins/archive/0.4.4.zip
+  current_binary_release: https://pypi.python.org/pypi/airflow-imaging-plugins/0.4.4
   release_script: 'publish.sh'
 
 continuous_integration: []
