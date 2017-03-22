@@ -24,7 +24,7 @@ _classifiers = (
 
 _install_requires = [
     'airflow>=1.7.0',
-    'data_tracking>=1.5.3'
+    'data_tracking>=1.5.4'
 ]
 
 setup(
