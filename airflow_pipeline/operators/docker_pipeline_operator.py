@@ -78,6 +78,7 @@ class DockerPipelineOperator(DockerOperator, TransferPipelineXComs):
     :type container_output_dir: str
     :param output_folder_callable: A reference to an object that is callable.
         It should return the location of the output folder on the host containing the results of the computation.
+        If None, an output volume is not mounted for the Docker container and provenance is not tracked.
     :type output_folder_callable: python callable
     :param user: Default user inside the docker container.
     :type user: int or str
@@ -165,23 +166,27 @@ class DockerPipelineOperator(DockerOperator, TransferPipelineXComs):
 
         self.pipeline_xcoms = self.pipeline_xcoms or {}
         host_input_dir = self.pipeline_xcoms['folder']
-        host_output_dir = self.output_folder_callable(
-            **self.pipeline_xcoms)
+        host_output_dir = None
+        if self.output_folder_callable:
+            host_output_dir = self.output_folder_callable(
+                **self.pipeline_xcoms)
 
-        # Ensure that there is no data in the output folder
-        try:
-            if os.path.exists(host_output_dir):
-                os.removedirs(host_output_dir)
-            os.makedirs(host_output_dir)
-        except Exception:
-            logging.error("Cannot cleanup output directory %s before executing Docker container %s",
-                          host_output_dir, self.image)
+        if host_output_dir:
+            # Ensure that there is no data in the output folder
+            try:
+                if os.path.exists(host_output_dir):
+                    os.removedirs(host_output_dir)
+                os.makedirs(host_output_dir)
+            except Exception:
+                logging.error("Cannot cleanup output directory %s before executing Docker container %s",
+                              host_output_dir, self.image)
 
         self.environment['AIRFLOW_INPUT_DIR'] = self.container_input_dir
         self.volumes.append('{0}:{1}:ro'.format(host_input_dir, self.container_input_dir))
 
-        self.environment['AIRFLOW_OUTPUT_DIR'] = self.container_output_dir
-        self.volumes.append('{0}:{1}:rw'.format(host_output_dir, self.container_output_dir))
+        if host_output_dir:
+            self.environment['AIRFLOW_OUTPUT_DIR'] = self.container_output_dir
+            self.volumes.append('{0}:{1}:rw'.format(host_output_dir, self.container_output_dir))
 
         try:
             logs = super(DockerPipelineOperator, self).execute(context)
@@ -194,11 +199,13 @@ class DockerPipelineOperator(DockerOperator, TransferPipelineXComs):
             logging.error("-----------")
             # Clean output folder before attempting to retry the
             # computation
-            rmtree(host_output_dir, ignore_errors=True)
+            if host_output_dir:
+                rmtree(host_output_dir, ignore_errors=True)
             self.trigger_dag(context, self.on_failure_trigger_dag_id, logs)
             raise
 
-        self.pipeline_xcoms['folder'] = host_output_dir
+        if host_output_dir:
+            self.pipeline_xcoms['folder'] = host_output_dir
         self.pipeline_xcoms['output'] = logs
         self.pipeline_xcoms['error'] = ''
 
@@ -210,7 +217,8 @@ class DockerPipelineOperator(DockerOperator, TransferPipelineXComs):
 
         software_versions = {'fn_called': image, 'fn_version': version,
                              'others': '{"docker_image"="%s:%s"}' % (image, version)}
-        self.track_provenance(host_output_dir, software_versions)
+        if host_output_dir:
+            self.track_provenance(host_output_dir, software_versions)
 
         self.write_pipeline_xcoms(context)
 
