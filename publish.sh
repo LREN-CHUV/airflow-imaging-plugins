@@ -55,10 +55,16 @@ git push
 git push --tags
 
 # Build again to update the version
+echo "Build the project for distribution..."
 ./build.sh
+echo "[ok] Done"
 
 # Push on PyPi
-twine upload dist/*
+until twine upload dist/*
+do
+  echo "Try again to login on PyPI and release this library..."
+  read -p "Press Enter to continue > "
+done
 
 # Notify on slack
 set -e
