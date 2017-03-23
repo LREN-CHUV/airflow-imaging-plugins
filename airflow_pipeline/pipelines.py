@@ -97,7 +97,7 @@ class TransferPipelineXComs(object):
     def write_pipeline_xcoms(self, context):
         for key, value in self.pipeline_xcoms.items():
             logging.warning("Write XCOM %s=%s", key, value)
-            self.xcom_push(context, key=key, value=value)
+        context['ti'].xcom_push(key=key, value=value)
 
     def track_provenance(self, output_folder, software_versions=None):
         provenance_id = create_provenance(self.pipeline_xcoms['dataset'], software_versions=software_versions)
