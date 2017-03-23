@@ -47,34 +47,35 @@ class TransferPipelineXComs(object):
         self.pipeline_xcoms = {}
         self.incoming_parameters = dedent("""
           # Task {{ task.task_id }}
-          ## Incoming parameters
+          Parent task: $parent_task
 
+          ## Incoming parameters
           dataset = {{ task_instance.xcom_pull(task_ids='$parent_task', key='dataset') }}
           folder = {{ task_instance.xcom_pull(task_ids='$parent_task', key='folder') }}
-          {% set session_id = task_instance.xcom_pull(task_ids='$parent_task', key='session_id') %}
-          {% if session_id %}
+          {%  set session_id = task_instance.xcom_pull(task_ids='$parent_task', key='session_id') -%}
+          {%- if session_id %}
           session_id = {{ session_id }}
-          {% endif %}
-          {% set scan_date = task_instance.xcom_pull(task_ids='$parent_task', key='scan_date') %}
-          {% if scan_date %}
+          {%  endif -%}
+          {%- set scan_date = task_instance.xcom_pull(task_ids='$parent_task', key='scan_date') -%}
+          {%- if scan_date %}
           scan_date = {{ scan_date }}
-          {% endif %}
+          {%  endif %}
 
-          {% set matlab_version = task_instance.xcom_pull(task_ids='$parent_task', key='matlab_version') %}
-          {% set spm_version = task_instance.xcom_pull(task_ids='$parent_task', key='spm_version') %}
-          {% set spm_revision = task_instance.xcom_pull(task_ids='$parent_task', key='spm_revision') %}
-          {% set provenance_details = task_instance.xcom_pull(task_ids='$parent_task', key='provenance_details') %}
-          {% if matlab_version or spm_version %}
+          {%  set matlab_version = task_instance.xcom_pull(task_ids='$parent_task', key='matlab_version') -%}
+          {%- set spm_version = task_instance.xcom_pull(task_ids='$parent_task', key='spm_version') -%}
+          {%- set spm_revision = task_instance.xcom_pull(task_ids='$parent_task', key='spm_revision') -%}
+          {%- set provenance_details = task_instance.xcom_pull(task_ids='$parent_task', key='provenance_details') -%}
+          {%- if matlab_version or spm_version %}
           ## Provenance information
           matlab_version = {{ matlab_version }}
           spm_version = {{ spm_version }}
           spm_revision = {{ spm_revision }}
           provenance_details = {{ provenance_details }}
 
-          {% endif %}
-          {% set output = task_instance.xcom_pull(task_ids='$parent_task', key='output') %}
-          {% set error = task_instance.xcom_pull(task_ids='$parent_task', key='error') %}
-          {% if output or error %}
+          {%  endif -%}
+          {%- set output = task_instance.xcom_pull(task_ids='$parent_task', key='output') -%}
+          {%- set error = task_instance.xcom_pull(task_ids='$parent_task', key='error') -%}
+          {%- if output or error %}
           ## Output from previous task $parent_task
           ### Output
           {{ output }}
@@ -93,11 +94,15 @@ class TransferPipelineXComs(object):
                 self.pipeline_xcoms[xcom] = value
             elif xcom in expected:
                 logging.warning("xcom argument '%s' is empty", xcom)
+        self.pipeline_xcoms['task_id'] = self.task_id
+        if 'session_id' not in self.pipeline_xcoms:
+            dr = context['dag_run']
+            self.pipeline_xcoms['session_id'] = dr.conf['session_id']
 
     def write_pipeline_xcoms(self, context):
         for key, value in self.pipeline_xcoms.items():
             logging.warning("Write XCOM %s=%s", key, value)
-        context['ti'].xcom_push(key=key, value=value)
+            context['ti'].xcom_push(key=key, value=value)
 
     def track_provenance(self, output_folder, software_versions=None):
         provenance_id = create_provenance(self.pipeline_xcoms['dataset'], software_versions=software_versions)

@@ -96,7 +96,6 @@ class BashPipelineOperator(BashOperator, TransferPipelineXComs):
 
     def pre_execute(self, context):
         self.read_pipeline_xcoms(context, expected=['folder', 'dataset'])
-        self.pipeline_xcoms['task_id'] = self.task_id
 
     def execute(self, context):
 

@@ -72,10 +72,7 @@ class PythonPipelineOperator(PythonOperator, TransferPipelineXComs):
         TransferPipelineXComs.__init__(self, parent_task, None)
 
     def pre_execute(self, context):
-        self.read_pipeline_xcoms(context)
-        if 'session_id' not in self.pipeline_xcoms:
-            dr = context['dag_run']
-            self.pipeline_xcoms['session_id'] = dr.conf['session_id']
+        self.read_pipeline_xcoms(context, expected=['dataset'])
 
     def execute(self, context):
         self.op_kwargs = self.op_kwargs or {}

@@ -144,7 +144,6 @@ class SpmPipelineOperator(PythonOperator, TransferPipelineXComs):
                                  'folder', 'session_id', 'participant_id', 'scan_date',
                                  'dataset', 'matlab_version', 'spm_version', 'spm_revision',
                                  'provenance_details'])
-        self.pipeline_xcoms['task_id'] = self.task_id
         self.op_kwargs.update(self.pipeline_xcoms)
         self.out = StringIO()
         self.err = StringIO()

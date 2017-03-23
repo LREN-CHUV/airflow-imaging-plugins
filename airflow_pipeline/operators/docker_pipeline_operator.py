@@ -20,7 +20,7 @@ from shutil import rmtree
 
 
 def default_output_folder(folder, **kwargs):
-    return folder
+    return '/data/out/' + folder
 
 
 class DockerPipelineOperator(DockerOperator, TransferPipelineXComs):
@@ -158,9 +158,7 @@ class DockerPipelineOperator(DockerOperator, TransferPipelineXComs):
         self.on_failure_trigger_dag_id = on_failure_trigger_dag_id
 
     def pre_execute(self, context):
-        self.read_pipeline_xcoms(context, expected=[
-                                 'folder', 'dataset'])
-        self.pipeline_xcoms['task_id'] = self.task_id
+        self.read_pipeline_xcoms(context, expected=['folder', 'dataset'])
 
     def execute(self, context):
 
