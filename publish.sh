@@ -35,8 +35,9 @@ select_part() {
 
 git pull --tags
 # Look for a version tag in Git. If not found, ask the user to provide one
-git describe --exact-match > /dev/null || (
-  latest_version=$(git describe --abbrev=00 | echo '0.0.1')
+git describe --exact-match > /dev/null 2>&1 || (
+  latest_version=$(git describe --abbrev=00 || \
+    (bumpversion --dry-run --list patch | grep current_version | sed -r s,"^.*=",,) || echo '0.0.1')
   echo
   echo "Current commit has not been tagged with a version. Latest known version is $latest_version."
   PS3='What do you want to release? '
@@ -46,14 +47,14 @@ git describe --exact-match > /dev/null || (
     select_part "$choice"
     break
   done
-  new_version=$(bumpversion --dry-run --list patch | grep current_version | sed -r s,"^.*=",,)
-  read -p "Release version $new_version? [y/N] > " ok
+  updated_version=$(bumpversion --dry-run --list patch | grep current_version | sed -r s,"^.*=",,)
+  read -p "Release version $updated_version? [y/N] > " ok
   if [ "$ok" != "y" ]; then
     echo "Release aborted"
     exit 1
   fi
   # Bumpversion v0.5.3 does not support annotated tags
-  git tag -a -m "PyPi release $new_version" $new_version
+  git tag -a -m "PyPi release $updated_version" $updated_version
 )
 
 git push
