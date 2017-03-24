@@ -94,6 +94,14 @@ class DockerPipelineOperator(DockerOperator, TransferPipelineXComs):
     :param on_failure_trigger_dag_id: The dag_id to trigger if this stage of the pipeline has failed,
         i.e. when validate_result_callable raises AirflowSkipException.
     :type on_failure_trigger_dag_id: str
+    :param dataset_config: Collection of flags and setting related to the dataset:
+        - boost_provenance_scan: When True, we consider that all the files from same folder share the same meta-data.
+        The processing is 2x faster. Enabled by default.
+        - session_id_by_patient: Rarely, a data set might use study IDs which are unique by patient (not for the whole
+        study).
+        E.g.: LREN data. In such a case, you have to enable this flag. This will use PatientID + StudyID as a session
+        ID.
+    :type dataset_config: dict
     """
 
     template_fields = ('incoming_parameters', 'command', 'volumes')

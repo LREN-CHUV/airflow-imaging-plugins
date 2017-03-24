@@ -51,6 +51,14 @@ class PythonPipelineOperator(PythonOperator, TransferPipelineXComs):
     :type on_failure_trigger_dag_id: str
     :param software_versions: List of software and their versions used to build provenance information.
     :type software_versions: dictionary
+    :param dataset_config: Collection of flags and setting related to the dataset:
+        - boost_provenance_scan: When True, we consider that all the files from same folder share the same meta-data.
+        The processing is 2x faster. Enabled by default.
+        - session_id_by_patient: Rarely, a data set might use study IDs which are unique by patient (not for the whole
+        study).
+        E.g.: LREN data. In such a case, you have to enable this flag. This will use PatientID + StudyID as a session
+        ID.
+    :type dataset_config: dict
     """
 
     template_fields = ('templates_dict', 'incoming_parameters', )
@@ -69,6 +77,7 @@ class PythonPipelineOperator(PythonOperator, TransferPipelineXComs):
             parent_task=None,
             on_failure_trigger_dag_id=None,
             software_versions=None,
+            dataset_config=None,
             *args, **kwargs):
 
         PythonOperator.__init__(self,
@@ -79,7 +88,7 @@ class PythonPipelineOperator(PythonOperator, TransferPipelineXComs):
                                 templates_dict=templates_dict,
                                 templates_exts=templates_exts,
                                 *args, **kwargs)
-        TransferPipelineXComs.__init__(self, parent_task, None)
+        TransferPipelineXComs.__init__(self, parent_task, dataset_config)
         self.on_failure_trigger_dag_id = on_failure_trigger_dag_id
         self.software_versions = software_versions
 
