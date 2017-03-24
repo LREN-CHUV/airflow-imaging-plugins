@@ -40,6 +40,7 @@ git describe --exact-match > /dev/null 2>&1 || (
     (bumpversion --dry-run --list patch | grep current_version | sed -r s,"^.*=",,) || echo '0.0.1')
   echo
   echo "Current commit has not been tagged with a version. Latest known version is $latest_version."
+  echo
   PS3='What do you want to release? '
   options=("Patch release" "Minor release" "Major release" "Release with a custom version")
   select choice in "${options[@]}";
