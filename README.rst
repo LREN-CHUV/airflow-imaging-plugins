@@ -3,7 +3,21 @@
 Airflow Imaging plugins
 =======================
 
-Set of plugins helping to work with imaging data in Airflow.
+Airflow plugins providing support for preprocessing of neuroimaging
+data.
+
+The following packages are provided:
+
+-  airflow\_freespace: Sensors that check the amount of free space on
+   the disk and waits until enough free space is available
+-  airflow\_pipeline: Operators and helpers to build generic processing
+   pipelines
+-  airflow\_scan\_folder: Operators used to scan folders for new work
+-  airflow\_spm: Operators adapting Matlab and `SPM
+   12 <http://www.fil.ion.ucl.ac.uk/spm>`__ to work inside Airflow
+
+Usage
+-----
 
 Imaging data is organised by folders, where each fist-level folder
 represents a scanning session.
@@ -13,10 +27,27 @@ scanning session. In Airflow, we use the XCOM mechanism to transmit data
 from one step of the pipeline to the next step. This is why each
 processing pipelines need to start with
 airflow\_pipeline.operators.PreparePipelineOperator as it injects into
-XCOM the necessary information that is required for the following steps:
+XCOM the necessary information that is required for the other
+\*PipelineOperator:
 
--  airflow\_spm.operators.SpmPipelineOperator
--  airflow\_pipeline.operators.PythonPipelineOperator
+All Python callback functions provided to those operators can use as
+arguments the following variables coming from XCOM:
+
+-  folder
+-  session\_id
+-  participant\_id
+-  scan\_date
+-  output
+-  error
+-  dataset
+-  matlab\_version
+-  spm\_version
+-  spm\_revision
+-  provenance\_details
+-  provenance\_previous\_step\_id
+-  relative\_context\_path
+
+See airflow\_pipeline.pipelines.PIPELINE\_XCOMS for an up-to-date list
 
 List of plugins
 ---------------
