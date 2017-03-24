@@ -47,7 +47,7 @@ class TransferPipelineXComs(object):
         self.pipeline_xcoms = {}
         self.incoming_parameters = dedent("""
           # Task {{ task.task_id }}
-          Parent task: $parent_task
+          Parent task = $parent_task
 
           ## Incoming parameters
           dataset = {{ task_instance.xcom_pull(task_ids='$parent_task', key='dataset') }}
@@ -61,7 +61,7 @@ class TransferPipelineXComs(object):
           scan_date = {{ scan_date }}
           {%  endif %}
 
-          {%  set matlab_version = task_instance.xcom_pull(task_ids='$parent_task', key='matlab_version') -%}
+          {%-  set matlab_version = task_instance.xcom_pull(task_ids='$parent_task', key='matlab_version') -%}
           {%- set spm_version = task_instance.xcom_pull(task_ids='$parent_task', key='spm_version') -%}
           {%- set spm_revision = task_instance.xcom_pull(task_ids='$parent_task', key='spm_revision') -%}
           {%- set provenance_details = task_instance.xcom_pull(task_ids='$parent_task', key='provenance_details') -%}
@@ -77,8 +77,10 @@ class TransferPipelineXComs(object):
           {%- set error = task_instance.xcom_pull(task_ids='$parent_task', key='error') -%}
           {%- if output or error %}
           ## Output from previous task $parent_task
+
           ### Output
           {{ output }}
+
           ### Errors
           {{ error }}
 
@@ -97,7 +99,8 @@ class TransferPipelineXComs(object):
         self.pipeline_xcoms['task_id'] = self.task_id
         if 'session_id' not in self.pipeline_xcoms:
             dr = context['dag_run']
-            self.pipeline_xcoms['session_id'] = dr.conf['session_id']
+            if 'session_id' in dr:
+                self.pipeline_xcoms['session_id'] = dr.conf['session_id']
 
     def write_pipeline_xcoms(self, context):
         for key, value in self.pipeline_xcoms.items():

@@ -36,17 +36,18 @@ class PreparePipelineOperator(BaseOperator):
         super(PreparePipelineOperator, self).__init__(*args, **kwargs)
         self.incoming_parameters = dedent("""
           # Task {{ task.task_id }}
+
           ## Task configuration
 
           None
 
           ## Pipeline {{ dag.dag_id }} parameters
 
-          folder: {{ dag_run.conf['folder'] }}
+          folder = {{ dag_run.conf['folder'] }}
           dataset = {{ dag_run.conf['dataset'] }}
-          {% if 'session_id' in dag_run.conf %}
+          {% if 'session_id' in dag_run.conf -%}
           session_id = {{ dag_run.conf['session_id'] }}
-          {% endif %}
+          {%- endif %}
         """)
         self.include_spm_facts = include_spm_facts
 
