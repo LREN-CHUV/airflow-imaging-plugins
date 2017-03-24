@@ -41,7 +41,8 @@ git describe --exact-match > /dev/null 2>&1 || (
   echo
   echo "Current commit has not been tagged with a version. Latest known version is $latest_version."
   echo
-  PS3='What do you want to release? '
+  echo 'What do you want to release?'
+  PS3='Select the version increment> '
   options=("Patch release" "Minor release" "Major release" "Release with a custom version")
   select choice in "${options[@]}";
   do
