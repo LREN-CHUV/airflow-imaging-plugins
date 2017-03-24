@@ -1,3 +1,14 @@
+description: "Airflow plugins providing support for preprocessing of neuroimaging data"
+
+long_description: "
+The following packages are provided:
+
+* airflow_freespace: Sensors that check the amount of free space on the disk and waits until enough free space is available
+* airflow_pipeline: Operators and helpers to build generic processing pipelines
+* airflow_scan_folder: Operators used to scan folders for new work
+* airflow_spm: Operators adapting Matlab and [SPM 12](http://www.fil.ion.ucl.ac.uk/spm) to work inside Airflow
+"
+
 authors:
   - author: Ludovic Claude
     author_email:
@@ -20,29 +31,29 @@ component:
 license:
   name: Apache 2.0
   badge: https://img.shields.io/badge/license-Apache--2.0-blue.svg
-  link: https://github.com/LREN-CHUV/airflow-imaging-plugins/blob/master/LICENSE
+  url: https://github.com/LREN-CHUV/airflow-imaging-plugins/blob/master/LICENSE
 
 code_repositories:
   - name: chuv-gitlab/HBPMedical
     visibility: private
-    link: https://___.chuv.ch/data-factory/airflow-imaging-plugins/
+    url: https://___.chuv.ch/data-factory/airflow-imaging-plugins/
     git_clone: https://___.chuv.ch/data-factory/airflow-imaging-plugins.git
   - name: github/LREN-CHUV
     visibility: public
-    link: https://github.io/LREN-CHUV/airflow-imaging-plugins/
+    url: https://github.io/LREN-CHUV/airflow-imaging-plugins/
     git_clone: https://github.io/LREN-CHUV/airflow-imaging-plugins.git
   - name: github/HBPMedical
     visibility: public
-    link: https://github.io/HBPMedical/airflow-imaging-plugins/
+    url: https://github.io/HBPMedical/airflow-imaging-plugins/
     git_clone: https://github.io/HBPMedical/airflow-imaging-plugins.git
 
 code_quality_checks:
   codacy:
     badge: https://api.codacy.com/project/badge/Grade/7a9c796392e4420495ee1fabd0fce9ae
-    link: "https://www.codacy.com/app/hbp-mip/airflow-imaging-plugins?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=LREN-CHUV/airflow-imaging-plugins&amp;utm_campaign=Badge_Grade"
+    url: "https://www.codacy.com/app/hbp-mip/airflow-imaging-plugins?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=LREN-CHUV/airflow-imaging-plugins&amp;utm_campaign=Badge_Grade"
   landscape:
     badge: "https://landscape.io/github/LREN-CHUV/airflow-imaging-plugins/master/landscape.svg?style=flat"
-    link: https://landscape.io/github/LREN-CHUV/airflow-imaging-plugins/master
+    url: https://landscape.io/github/LREN-CHUV/airflow-imaging-plugins/master
 
 testing:
   unit_testing: []
@@ -58,6 +69,14 @@ continuous_integration: []
 distribution:
   pypi:
     badge: https://img.shields.io/pypi/v/airflow-imaging-plugins.svg
-    link: https://pypi.python.org/pypi/airflow-imaging-plugins/
+    url: https://pypi.python.org/pypi/airflow-imaging-plugins/
 
-planning: []
+planning:
+  github:
+    name: Issues on Github
+    url: https://github.com/LREN-CHUV/airflow-imaging-plugins/issues
+
+related_projects:
+  - name: data-factory-airflow-dags
+    mip_building_block: data-factory
+    relationship: other-depends-on
