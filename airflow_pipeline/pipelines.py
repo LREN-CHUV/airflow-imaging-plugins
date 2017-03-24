@@ -99,7 +99,7 @@ class TransferPipelineXComs(object):
         self.pipeline_xcoms['task_id'] = self.task_id
         if 'session_id' not in self.pipeline_xcoms:
             dr = context['dag_run']
-            if 'session_id' in dr:
+            if 'session_id' in dr.conf:
                 self.pipeline_xcoms['session_id'] = dr.conf['session_id']
 
     def write_pipeline_xcoms(self, context):
