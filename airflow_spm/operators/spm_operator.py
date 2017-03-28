@@ -74,6 +74,7 @@ class SpmOperator(PythonOperator):
                                           templates_exts=templates_exts,
                                           *args, **kwargs)
         self.matlab_paths = matlab_paths
+        self.engine = None
 
     def pre_execute(self, context):
         spm_dir = str(configuration.get('spm', 'SPM_DIR'))
