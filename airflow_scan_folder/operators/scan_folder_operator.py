@@ -98,14 +98,17 @@ class ScanFlatFolderOperator(FolderOperator):
                 'Prepare trigger for preprocessing : %s', str(folder))
 
             self.trigger_dag_run(context, self.root_folder(context), folder, session)
-            self.offset = self.offset + 1
+            self.offset += 1
         else:
             for fname in os.listdir(folder):
                 if not (fname in ['.git', '.svn', '.tmp']):
                     path = os.path.join(folder, fname)
-                    if os.path.isdir(path) and \
-                            (self.accept_folder_callable is None or self.accept_folder_callable(path=path)):
-                        self.scan_dirs(path, context, session=session, depth=depth + 1)
+                    if os.path.isdir(path):
+                        try:
+                            if self.accept_folder_callable(path=path):
+                                raise TypeError
+                        except TypeError:
+                            self.scan_dirs(path, context, session=session, depth=depth + 1)
 
 
 class ScanDailyFolderOperator(ScanFlatFolderOperator):
