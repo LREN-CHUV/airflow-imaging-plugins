@@ -22,7 +22,7 @@ def default_look_for_ready_marker_file(daily_folder_date):
 
 def default_extract_context(root_folder, folder):
     """Extract the folder and relative_context_path"""
-    context = {}
+    context = dict()
     context['folder'] = folder
     context['root_folder'] = root_folder
     context['relative_context_path'] = os.path.relpath(folder, start=root_folder)
@@ -35,7 +35,7 @@ def extract_context_from_session_path(root_folder, folder):
 
     Assumes that the last part of the name represents a session ID
     """
-    context = {}
+    context = dict()
     context['folder'] = folder
     context['root_folder'] = root_folder
     context['relative_context_path'] = os.path.relpath(folder, start=root_folder)
