@@ -108,7 +108,7 @@ class BashPipelineOperator(BashOperator, TransferPipelineXComs):
             try:
                 if os.path.exists(output_dir):
                     os.removedirs(output_dir)
-            except Exception:
+            except (OSError, Exception):
                 logging.error("Cannot cleanup output directory %s before executing Bash command",
                               output_dir)
 
