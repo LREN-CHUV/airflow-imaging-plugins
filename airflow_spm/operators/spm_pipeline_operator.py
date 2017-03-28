@@ -92,7 +92,7 @@ class SpmPipelineOperator(PythonOperator, TransferPipelineXComs):
         study).
         E.g.: LREN data. In such a case, you have to enable this flag. This will use PatientID + StudyID as a session
         ID.
-    :type dataset_config: dict
+    :type dataset_config: list
     """
 
     ui_color = '#c2560a'
