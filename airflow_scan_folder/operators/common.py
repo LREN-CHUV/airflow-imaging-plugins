@@ -20,24 +20,26 @@ def default_look_for_ready_marker_file(daily_folder_date):
     return daily_folder_date.date() == datetime.today().date()
 
 
-def default_extract_context(root_folder, folder, pipeline_xcoms=dict()):
+def default_extract_context(root_folder, folder, pipeline_xcoms=None):
     """Extract the folder and relative_context_path"""
     context = dict()
-    context.update(pipeline_xcoms)
+    if pipeline_xcoms:
+        context.update(pipeline_xcoms)
     context['folder'] = folder
     context['root_folder'] = root_folder
     context['relative_context_path'] = os.path.relpath(folder, start=root_folder)
     return context
 
 
-def extract_context_from_session_path(root_folder, folder, pipeline_xcoms=dict()):
+def extract_context_from_session_path(root_folder, folder, pipeline_xcoms=None):
     """
     Extract the folder, relative_context_path and session_id from a folder.
 
     Assumes that the last part of the name represents a session ID
     """
     context = dict()
-    context.update(pipeline_xcoms)
+    if pipeline_xcoms:
+        context.update(pipeline_xcoms)
     context['folder'] = folder
     context['root_folder'] = root_folder
     context['relative_context_path'] = os.path.relpath(folder, start=root_folder)
