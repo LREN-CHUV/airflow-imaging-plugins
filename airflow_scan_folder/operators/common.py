@@ -83,6 +83,10 @@ def default_build_daily_folder_path_callable(folder, date):
     return os.path.join(folder, date.strftime('%Y'), date.strftime('%Y%m%d'))
 
 
+def default_accept_folder(path):
+    return True
+
+
 def round_up_time(dt=None, date_delta=timedelta(minutes=1)):
     """
     Round a datetime object to a multiple of a timedelta.

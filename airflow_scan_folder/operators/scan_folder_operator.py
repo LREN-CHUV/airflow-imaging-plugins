@@ -1,10 +1,10 @@
 
 """
-.. module:: operators.folder_operator
+.. module:: operators.scan_folder_operator
 
-    :synopsis: DailyFolderOperator triggers a DAG run for a specified ``dag_id`` for the daily
+    :synopsis: ScanDailyFolderOperator triggers a DAG run for a specified ``dag_id`` for the daily
                folder matching path root_folder/yyyy/yyyyMMdd where the date used is the execution date.
-               FlatFolderOperator triggers a DAG run for a specified ``dag_id`` for each folder discovered
+               ScanFlatFolderOperator triggers a DAG run for a specified ``dag_id`` for each folder discovered
                in a parent folder.
 
 .. moduleauthor:: Ludovic Claude <ludovic.claude@chuv.ch>
@@ -21,10 +21,6 @@ from airflow.utils.db import provide_session
 
 from .common import FolderOperator, default_extract_context, default_look_for_ready_marker_file
 from .common import default_trigger_dagrun, default_build_daily_folder_path_callable
-
-
-def default_accept_folder(path):
-    return True
 
 
 class ScanFlatFolderOperator(FolderOperator):
@@ -85,8 +81,11 @@ class ScanFlatFolderOperator(FolderOperator):
         self.accept_folder_callable = accept_folder_callable
         self.depth = depth
 
+    def root_folder(self, context):
+        return self.folder
+
     def execute(self, context):
-        self.scan_dirs(self.folder, context)
+        self.scan_dirs(self.root_folder(context), context)
 
     @provide_session
     def scan_dirs(self, folder, context, session=None, depth=0):
@@ -98,7 +97,7 @@ class ScanFlatFolderOperator(FolderOperator):
             logging.info(
                 'Prepare trigger for preprocessing : %s', str(folder))
 
-            self.trigger_dag_run(context, self.folder, folder, session)
+            self.trigger_dag_run(context, self.root_folder(context), folder, session)
             self.offset = self.offset + 1
         else:
             for fname in os.listdir(folder):

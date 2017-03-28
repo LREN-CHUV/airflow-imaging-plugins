@@ -5,7 +5,7 @@
 
 * Refactor airflow_scan_operator package.
   * All operators prefixed with 'Scan'
-  * Add ScanFlatFolderPipelineOperator, ScanDailyFolderPipelineOperator
+  * Add ScanFlatFolderPipelineOperator
   * Add extract_context_callable to extract information from the paths,
     removes the need for special operators to scan organised / non organised folders
 
