@@ -43,6 +43,46 @@ def extract_context_from_session_path(root_folder, folder):
     return context
 
 
+def default_trigger_dagrun(context, dag_run_obj):
+    """Trigger a DAG run for any folder"""
+
+    if True:
+        folder = context['params']['folder']
+        start_date = context['start_date']
+        # The payload will be available in target dag context as
+        # kwargs['dag_run'].conf
+        dag_run_obj.payload = context['params']
+        # Use a granularity of days for run_id to avoid restarting the same computation on
+        # a MRI scan several times on the same day. Recomputation is expensive and should be minimised,
+        # to force a re-computation an administrator will need to delete existing DagRuns or configure the
+        # DAG to use another trigger_dagrun function that uses another naming convention for run_id
+        dag_run_obj.run_id = folder + '-' + \
+            start_date.strftime('%Y%m%d')
+        return dag_run_obj
+
+
+def session_folder_trigger_dagrun(context, dag_run_obj):
+    """Trigger a DAG run for a folder containing a scan session"""
+
+    if True:
+        session_id = context['params']['session_id']
+        start_date = context['start_date']
+        # The payload will be available in target dag context as
+        # kwargs['dag_run'].conf
+        dag_run_obj.payload = context['params']
+        # Use a granularity of days for run_id to avoid restarting the same computation on
+        # a MRI scan several times on the same day. Recomputation is expensive and should be minimised,
+        # to force a re-computation an administrator will need to delete existing DagRuns or configure the
+        # DAG to use another trigger_dagrun function that uses another naming convention for run_id
+        dag_run_obj.run_id = session_id + '-' + \
+            start_date.strftime('%Y%m%d')
+        return dag_run_obj
+
+
+def default_build_daily_folder_path_callable(folder, date):
+    return os.path.join(folder, date.strftime('%Y'), date.strftime('%Y%m%d'))
+
+
 def round_up_time(dt=None, date_delta=timedelta(minutes=1)):
     """
     Round a datetime object to a multiple of a timedelta.

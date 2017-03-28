@@ -1,53 +1,39 @@
 
 """
-.. module:: operators.scan_folder_operator
+.. module:: operators.folder_operator
 
-    :synopsis: ScanFolderOperator to look for the list of folders containing scans starting from a parent folder
-               and for each folder to trigger a pipeline DAG run.
-               ScanDailyFolderOperator to look for the list of folders containing scans starting from
-               a subfolder matching the execution date year then the full execution date day and
-               for each folder to trigger a pipeline DAG run.
+    :synopsis: DailyFolderOperator triggers a DAG run for a specified ``dag_id`` for the daily
+               folder matching path root_folder/yyyy/yyyyMMdd where the date used is the execution date.
+               FlatFolderOperator triggers a DAG run for a specified ``dag_id`` for each folder discovered
+               in a parent folder.
 
 .. moduleauthor:: Ludovic Claude <ludovic.claude@chuv.ch>
 """
 
 
 import logging
+
 import os
 
 from airflow.utils import apply_defaults
 from airflow.exceptions import AirflowSkipException
 from airflow.utils.db import provide_session
 
-from .common import FolderOperator, default_look_for_ready_marker_file
+from .common import FolderOperator, default_extract_context, default_look_for_ready_marker_file
+from .common import default_trigger_dagrun, default_build_daily_folder_path_callable
 
 
-def default_is_valid_session_id(session_id):
-    sid = session_id.strip().lower()
-    return not ('delete' in sid) and not ('phantom' in sid)
+def default_accept_folder(path):
+    return True
 
 
-def default_trigger_dagrun(context, dag_run_obj):
-    if True:
-        session_id = context['params']['session_id']
-        start_date = context['start_date']
-        # The payload will be available in target dag context as
-        # kwargs['dag_run'].conf
-        dag_run_obj.payload = context['params']
-        # Use a granularity of days for run_id to avoid restarting the same computation on
-        # a MRI scan several times on the same day. Recomputation is expensive and should be minimised,
-        # to force a re-computation an administrator will need to delete existing DagRuns or configure the
-        # DAG to use another trigger_dagrun function that uses another naming convention for run_id
-        dag_run_obj.run_id = session_id + '-' + \
-            start_date.strftime('%Y%m%d')
-        return dag_run_obj
-
-
-class ScanFolderOperator(FolderOperator):
+class ScanFlatFolderOperator(FolderOperator):
 
     """
-    Triggers a DAG run for a specified ``dag_id`` for each scan folder discovered in a parent folder.
+    Triggers a DAG run for a specified ``dag_id`` for each folder discovered in a parent folder.
 
+    :param dataset: name of the dataset
+    :type dataset: str
     :param folder: root folder
     :type folder: str
     :param trigger_dag_id: the dag_id to trigger
@@ -62,12 +48,17 @@ class ScanFolderOperator(FolderOperator):
         to your tasks while executing that DAG run. Your function header
         should look like ``def foo(context, dag_run_obj):``
     :type trigger_dag_run_callable: python callable
-    :param dataset: name of the dataset
-    :type dataset: str
-    :param is_valid_session_id: a reference to a python function that will be
-        called while passing it the ``session_id`` string and return True if
-        the session is valid, False otherwise
-    :type is_valid_session_id: python callable
+    :param extract_context_callable: a reference to a python function that will be
+        called while passing it a ```root_folder``` and a ```folder``` string. The function
+        should return a dictionary containing the context attributes that it could extract from the paths.
+    :type extract_context_callable: python callable
+    :param accept_folder_callable: a reference to a python function that will be
+        called while passing it a ```path``` string. The function
+        should return True if it accepts the folder and the operator will trigger a
+        new DAG run of that folder, False otherwise.
+    :type accept_folder_callable: python callable
+    :param depth: Depth of folders to traverse. Default: 1
+    :type depth: int
     """
 
     template_fields = tuple()
@@ -77,47 +68,57 @@ class ScanFolderOperator(FolderOperator):
     @apply_defaults
     def __init__(
             self,
+            dataset,
             folder,
             trigger_dag_id,
             trigger_dag_run_callable=default_trigger_dagrun,
-            dataset=None,
-            is_valid_session_id=default_is_valid_session_id,
+            extract_context_callable=default_extract_context,
+            accept_folder_callable=None,
+            depth=1,
             *args, **kwargs):
-        super(ScanFolderOperator, self).__init__(trigger_dag_run_callable=trigger_dag_run_callable,
-                                                 trigger_dag_id=trigger_dag_id,
-                                                 dataset=dataset,
-                                                 *args, **kwargs)
+        super(ScanFlatFolderOperator, self).__init__(dataset=dataset,
+                                                     trigger_dag_id=trigger_dag_id,
+                                                     trigger_dag_run_callable=trigger_dag_run_callable,
+                                                     extract_context_callable=extract_context_callable,
+                                                     *args, **kwargs)
         self.folder = folder
-        self.is_valid_session_id = is_valid_session_id
+        self.accept_folder_callable = accept_folder_callable
+        self.depth = depth
 
     def execute(self, context):
         self.scan_dirs(self.folder, context)
 
     @provide_session
-    def scan_dirs(self, folder, context, session=None):
+    def scan_dirs(self, folder, context, session=None, depth=0):
+
         if not os.path.exists(folder):
             raise AirflowSkipException
 
-        for fname in os.listdir(folder):
-            if not (fname in ['.git', '.svn', '.tmp']):
-                path = os.path.join(folder, fname)
-                if os.path.isdir(path):
-                    if self.is_valid_session_id(fname):
+        if depth == self.depth:
+            logging.info(
+                'Prepare trigger for preprocessing : %s', str(folder))
 
-                        logging.info(
-                            'Prepare trigger for preprocessing : %s', str(fname))
+            self.trigger_dag_run(context, self.folder, folder, session)
+            self.offset = self.offset + 1
+        else:
+            for fname in os.listdir(folder):
+                if not (fname in ['.git', '.svn', '.tmp']):
+                    path = os.path.join(folder, fname)
+                    if os.path.isdir(path) and \
+                            (self.accept_folder_callable is None or self.accept_folder_callable(path=path)):
+                        self.scan_dirs(path, context, session=session, depth=depth + 1)
 
-                        self.trigger_dag_run(context, {'folder': path, 'session_id': fname}, session)
-                        self.offset = self.offset + 1
 
-
-class ScanDailyFolderOperator(FolderOperator):
+class ScanDailyFolderOperator(ScanFlatFolderOperator):
 
     """
-    Triggers a DAG run for a specified ``dag_id`` for each scan folder discovered in a daily folder.
+    Triggers a DAG run for a specified ``dag_id`` for the daily folder.
 
-    The day is related to the ``execution_date`` given in the context of the DAG.
+    The daily folder should match path root_folder/yyyy/yyyyMMdd where the date
+    used is the execution date.
 
+    :param dataset: name of the dataset
+    :type dataset: str
     :param folder: root folder
     :type folder: str
     :param trigger_dag_id: the dag_id to trigger
@@ -132,75 +133,77 @@ class ScanDailyFolderOperator(FolderOperator):
         to your tasks while executing that DAG run. Your function header
         should look like ``def foo(context, dag_run_obj):``
     :type trigger_dag_run_callable: python callable
-    :param dataset: name of the dataset
-    :type dataset: str
+    :param extract_context_callable: a reference to a python function that will be
+        called while passing it a ```root_folder``` and a ```folder``` string. The function
+        should return a dictionary containing the context attributes that it could extract from the paths.
+    :type extract_context_callable: python callable
+    :param accept_folder_callable: a reference to a python function that will be
+        called while passing it a ```path``` string. The function
+        should return True if it accepts the folder and the operator will trigger a
+        new DAG run of that folder, False otherwise.
+    :type accept_folder_callable: python callable
+    :param build_daily_folder_path_callable: a reference to a python function that will be
+        called while passing it a ```folder``` and a ```date``` and return the path to
+        the daily folder to traverse.
+    :type build_daily_folder_path_callable: python callable
     :param look_for_ready_marker_file: a reference to a python function that will be
         called while passing it a date and return True if we need to look for the
         ``ready`` marker file to ensure that file creation and copy operations are complete,
         False otherwise
     :type look_for_ready_marker_file: python callable
-    :param is_valid_session_id: a reference to a python function that will be
-        called while passing it the ``session_id`` string and return True if
-        the session is valid, False otherwise
-    :type is_valid_session_id: python callable
+    :param ready_marker_file: name of the marker file to look for if necessary
+        (if look_for_ready_marker_file said so). Default to '.ready'
+    :type ready_marker_file: str
+    :param depth: Depth of folders to traverse inside the daily folder. Default: 0
+    :type depth: int
     """
 
     template_fields = tuple()
     template_ext = tuple()
-    ui_color = '#bbefeb'
+    ui_color = '#cceeeb'
 
     @apply_defaults
     def __init__(
             self,
+            dataset,
             folder,
             trigger_dag_id,
             trigger_dag_run_callable=default_trigger_dagrun,
-            dataset=None,
+            extract_context_callable=default_extract_context,
+            accept_folder_callable=None,
+            build_daily_folder_path_callable=default_build_daily_folder_path_callable,
             look_for_ready_marker_file=default_look_for_ready_marker_file,
             ready_marker_file='.ready',
-            is_valid_session_id=default_is_valid_session_id,
+            depth=0,
             *args, **kwargs):
-        super(ScanDailyFolderOperator, self).__init__(folder=folder, trigger_dag_id=trigger_dag_id,
+        super(ScanDailyFolderOperator, self).__init__(dataset=dataset,
+                                                      folder=folder,
+                                                      trigger_dag_id=trigger_dag_id,
                                                       trigger_dag_run_callable=trigger_dag_run_callable,
-                                                      is_valid_session_id=is_valid_session_id,
-                                                      dataset=dataset, *args, **kwargs)
-        self.folder = folder
-        self.is_valid_session_id = is_valid_session_id
+                                                      extract_context_callable=extract_context_callable,
+                                                      accept_folder_callable=accept_folder_callable,
+                                                      depth=depth,
+                                                      *args, **kwargs)
+        self.build_daily_folder_path_callable = build_daily_folder_path_callable
         self.look_for_ready_marker_file = look_for_ready_marker_file
         self.ready_marker_file = ready_marker_file
 
     def execute(self, context):
-        self.scan_dirs(self.folder, context)
+        self.scan_daily_dirs(self.folder, context)
 
     @provide_session
-    def scan_dirs(self, folder, context, session=None):
+    def scan_daily_dirs(self, folder, context, session=None):
         daily_folder_date = context['execution_date']
 
         if not os.path.exists(folder):
             raise AirflowSkipException
 
-        daily_folder = os.path.join(folder, daily_folder_date.strftime(
-            '%Y'), daily_folder_date.strftime('%Y%m%d'))
-
-        # Ugly hack for LREN
-        if not os.path.isdir(daily_folder):
-            daily_folder = os.path.join(
-                folder, '2014', daily_folder_date.strftime('%Y%m%d'))
+        daily_folder = self.build_daily_folder_path_callable(folder, daily_folder_date)
 
         if not os.path.isdir(daily_folder):
             raise AirflowSkipException
 
-        for fname in os.listdir(daily_folder):
-            path = os.path.join(daily_folder, fname)
-            if os.path.isdir(path):
+        ready_marker_file = os.path.join(daily_folder, self.ready_marker_file)
+        if not self.look_for_ready_marker_file(daily_folder_date) or os.access(ready_marker_file, os.R_OK):
 
-                ready_marker_file = os.path.join(path, self.ready_marker_file)
-                if self.is_valid_session_id(fname) \
-                   and not self.look_for_ready_marker_file(daily_folder_date) \
-                   or os.access(ready_marker_file, os.R_OK):
-
-                    logging.info(
-                        'Prepare trigger for preprocessing : %s', str(fname))
-
-                    self.trigger_dag_run(context, {'folder': path, 'session_id': fname}, session)
-                    self.offset = self.offset - 1
+            self.scan_dirs(folder, context, session)

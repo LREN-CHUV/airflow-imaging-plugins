@@ -1,7 +1,6 @@
 """Scan folder operators package"""
 
 
-from .scan_folder_operator import ScanFolderOperator, ScanDailyFolderOperator
-from .folder_operator import FlatFolderOperator, DailyFolderOperator
+from .scan_folder_operator import ScanFlatFolderOperator, ScanDailyFolderOperator
 
-__all__ = ['ScanFolderOperator', 'ScanDailyFolderOperator', 'FlatFolderOperator', 'DailyFolderOperator']
+__all__ = ['ScanFlatFolderOperator', 'ScanDailyFolderOperator']
