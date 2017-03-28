@@ -1,4 +1,4 @@
-""" Pipeline package """
+"""Pipeline package"""
 
 from .pipelines import pipeline_trigger
 

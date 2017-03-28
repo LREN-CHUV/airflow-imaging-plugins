@@ -1,0 +1,24 @@
+
+# Changelog
+
+## 2.0.0 - 2017/03/28
+
+* Refactor airflow_scan_operator package.
+  * All operators prefixed with 'Scan'
+  * Add ScanFlatFolderPipelineOperator, ScanDailyFolderPipelineOperator
+  * Add extract_context_callable to extract information from the paths,
+    removes the need for special operators to scan organised / non organised folders
+
+## 1.3.0
+
+* Add data_config parameter to PythonPipelineOperator
+
+## 1.2.0
+
+* Add provenance tracking to Python pipeline operator
+
+## 1.1.0
+
+* Optional output volume for Docker Pipeline operator
+
+## 1.0.0 - First public release

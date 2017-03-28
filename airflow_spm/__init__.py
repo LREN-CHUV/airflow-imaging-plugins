@@ -1,1 +1,1 @@
-""" SPM package """
+"""SPM package"""

@@ -3,6 +3,7 @@
 import logging
 import random
 import copy
+import os
 
 from datetime import datetime, timedelta
 
@@ -15,7 +16,31 @@ from sqlalchemy.exc import IntegrityError
 
 
 def default_look_for_ready_marker_file(daily_folder_date):
+    """Look for the ready marker file if the folder date is today"""
     return daily_folder_date.date() == datetime.today().date()
+
+
+def default_extract_context(root_folder, folder):
+    """Extract the folder and relative_context_path"""
+    context = {}
+    context['folder'] = folder
+    context['root_folder'] = root_folder
+    context['relative_context_path'] = os.path.relpath(folder, start=root_folder)
+    return context
+
+
+def extract_context_from_session_path(root_folder, folder):
+    """
+    Extract the folder, relative_context_path and session_id from a folder.
+
+    Assumes that the last part of the name represents a session ID
+    """
+    context = {}
+    context['folder'] = folder
+    context['root_folder'] = root_folder
+    context['relative_context_path'] = os.path.relpath(folder, start=root_folder)
+    context['session_id'] = os.path.basename(folder)
+    return context
 
 
 def round_up_time(dt=None, date_delta=timedelta(minutes=1)):
@@ -23,7 +48,7 @@ def round_up_time(dt=None, date_delta=timedelta(minutes=1)):
     Round a datetime object to a multiple of a timedelta.
 
     dt : datetime.datetime object, default now.
-    dateDelta : timedelta object, we round to a multiple of this, default 1 minute.
+    date_delta : timedelta object, we round to a multiple of this, default 1 minute.
     Author: Thierry Husson 2012 - Use it as you want but don't blame me.
             Stijn Nevens 2014 - Changed to use only datetime objects as variables
     """
@@ -45,7 +70,7 @@ class FolderOperator(BaseOperator):
 
     :param trigger_dag_id: the dag_id to trigger
     :type trigger_dag_id: str
-    :param python_callable: a reference to a python function that will be
+    :param trigger_dag_run_callable: a reference to a python function that will be
         called while passing it the ``context`` object and a placeholder
         object ``obj`` for your callable to fill and return if you want
         a DagRun created. This ``obj`` object contains a ``run_id`` and
@@ -54,7 +79,11 @@ class FolderOperator(BaseOperator):
         the payload has to be a picklable object that will be made available
         to your tasks while executing that DAG run. Your function header
         should look like ``def foo(context, dag_run_obj):``
-    :type python_callable: python callable
+    :type trigger_dag_run_callable: python callable
+    :param extract_context_callable: a reference to a python function that will be
+        called while passing it a ```root_folder``` and a ```folder``` string. The function
+        should return a dictionary containing the context attributes that it could extract from the paths.
+    :type extract_context_callable: python callable
     :param dataset: name of the dataset
     :type dataset: str
     """
@@ -65,22 +94,25 @@ class FolderOperator(BaseOperator):
     @apply_defaults
     def __init__(
             self,
+            dataset,
             trigger_dag_id,
-            dataset=None,
-            python_callable=None,
+            trigger_dag_run_callable=None,
+            extract_context_callable=None,
             *args, **kwargs):
         super(FolderOperator, self).__init__(*args, **kwargs)
-        self.trigger_dag_id = trigger_dag_id
         self.dataset = dataset
-        self.python_callable = python_callable
+        self.trigger_dag_id = trigger_dag_id
+        self.trigger_dag_run_callable = trigger_dag_run_callable
+        self.extract_context_callable = extract_context_callable
         self.offset = 1
 
     @provide_session
-    def trigger_dag_run(self, context, custom_context_params, session=None):
+    def trigger_dag_run(self, context, root_folder, folder, session=None):
         context = copy.copy(context)
         context_params = context['params']
         context_params['dataset'] = self.dataset
-        context_params.update(custom_context_params)
+        if self.extract_context_callable:
+            context_params.update(self.extract_context_callable(root_folder, folder))
 
         while True:
             dr_time = round_up_time(datetime.now() - timedelta(minutes=self.offset))
@@ -90,14 +122,14 @@ class FolderOperator(BaseOperator):
             if dr:
                 # Try to avoid too many collisions when backfilling a long
                 # backlog
-                self.offset = self.offset - random.randint(1, 100)
+                self.offset = self.offset + random.randint(1, 100)
             else:
                 break
 
         context['start_date'] = dr_time
 
         dro = DagRunOrder(run_id=run_id)
-        dro = self.python_callable(context, dro)
+        dro = self.trigger_dag_run_callable(context, dro)
         if dro:
             dr = DagRun(
                 dag_id=self.trigger_dag_id,
@@ -120,6 +152,6 @@ class FolderOperator(BaseOperator):
                 # Retry, while attempting to avoid too many collisions when
                 # backfilling a long backlog
                 self.offset = self.offset + random.randint(1, 10000)
-                self.trigger_dag_run(context, custom_context_params)
+                self.trigger_dag_run(context, root_folder, folder)
         else:
             logging.info("Criteria not met, moving on")

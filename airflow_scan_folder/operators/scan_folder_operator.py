@@ -52,7 +52,7 @@ class ScanFolderOperator(FolderOperator):
     :type folder: str
     :param trigger_dag_id: the dag_id to trigger
     :type trigger_dag_id: str
-    :param python_callable: a reference to a python function that will be
+    :param trigger_dag_run_callable: a reference to a python function that will be
         called while passing it the ``context`` object and a placeholder
         object ``obj`` for your callable to fill and return if you want
         a DagRun created. This ``obj`` object contains a ``run_id`` and
@@ -61,7 +61,7 @@ class ScanFolderOperator(FolderOperator):
         the payload has to be a picklable object that will be made available
         to your tasks while executing that DAG run. Your function header
         should look like ``def foo(context, dag_run_obj):``
-    :type python_callable: python callable
+    :type trigger_dag_run_callable: python callable
     :param dataset: name of the dataset
     :type dataset: str
     :param is_valid_session_id: a reference to a python function that will be
@@ -79,13 +79,14 @@ class ScanFolderOperator(FolderOperator):
             self,
             folder,
             trigger_dag_id,
-            python_callable=default_trigger_dagrun,
+            trigger_dag_run_callable=default_trigger_dagrun,
             dataset=None,
             is_valid_session_id=default_is_valid_session_id,
             *args, **kwargs):
-        super(ScanFolderOperator, self).__init__(trigger_dag_id,
+        super(ScanFolderOperator, self).__init__(trigger_dag_run_callable=trigger_dag_run_callable,
+                                                 trigger_dag_id=trigger_dag_id,
                                                  dataset=dataset,
-                                                 python_callable=python_callable, *args, **kwargs)
+                                                 *args, **kwargs)
         self.folder = folder
         self.is_valid_session_id = is_valid_session_id
 
@@ -121,7 +122,7 @@ class ScanDailyFolderOperator(FolderOperator):
     :type folder: str
     :param trigger_dag_id: the dag_id to trigger
     :type trigger_dag_id: str
-    :param python_callable: a reference to a python function that will be
+    :param trigger_dag_run_callable: a reference to a python function that will be
         called while passing it the ``context`` object and a placeholder
         object ``obj`` for your callable to fill and return if you want
         a DagRun created. This ``obj`` object contains a ``run_id`` and
@@ -130,7 +131,7 @@ class ScanDailyFolderOperator(FolderOperator):
         the payload has to be a picklable object that will be made available
         to your tasks while executing that DAG run. Your function header
         should look like ``def foo(context, dag_run_obj):``
-    :type python_callable: python callable
+    :type trigger_dag_run_callable: python callable
     :param dataset: name of the dataset
     :type dataset: str
     :param look_for_ready_marker_file: a reference to a python function that will be
@@ -153,14 +154,14 @@ class ScanDailyFolderOperator(FolderOperator):
             self,
             folder,
             trigger_dag_id,
-            python_callable=default_trigger_dagrun,
+            trigger_dag_run_callable=default_trigger_dagrun,
             dataset=None,
             look_for_ready_marker_file=default_look_for_ready_marker_file,
             ready_marker_file='.ready',
             is_valid_session_id=default_is_valid_session_id,
             *args, **kwargs):
         super(ScanDailyFolderOperator, self).__init__(folder=folder, trigger_dag_id=trigger_dag_id,
-                                                      python_callable=python_callable,
+                                                      trigger_dag_run_callable=trigger_dag_run_callable,
                                                       is_valid_session_id=is_valid_session_id,
                                                       dataset=dataset, *args, **kwargs)
         self.folder = folder

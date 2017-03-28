@@ -19,7 +19,11 @@ from airflow.utils import apply_defaults
 from airflow.exceptions import AirflowSkipException
 from airflow.utils.db import provide_session
 
-from .common import FolderOperator, default_look_for_ready_marker_file
+from .common import FolderOperator, default_extract_context, default_look_for_ready_marker_file
+
+
+def default_accept_folder(path):
+    return True
 
 
 def default_trigger_dagrun(context, dag_run_obj):
@@ -43,11 +47,13 @@ class FlatFolderOperator(FolderOperator):
     """
     Triggers a DAG run for a specified ``dag_id`` for each folder discovered in a parent folder.
 
+    :param dataset: name of the dataset
+    :type dataset: str
     :param folder: root folder
     :type folder: str
     :param trigger_dag_id: the dag_id to trigger
     :type trigger_dag_id: str
-    :param python_callable: a reference to a python function that will be
+    :param trigger_dag_run_callable: a reference to a python function that will be
         called while passing it the ``context`` object and a placeholder
         object ``obj`` for your callable to fill and return if you want
         a DagRun created. This ``obj`` object contains a ``run_id`` and
@@ -56,9 +62,16 @@ class FlatFolderOperator(FolderOperator):
         the payload has to be a picklable object that will be made available
         to your tasks while executing that DAG run. Your function header
         should look like ``def foo(context, dag_run_obj):``
-    :type python_callable: python callable
-    :param dataset: name of the dataset
-    :type dataset: str
+    :type trigger_dag_run_callable: python callable
+    :param extract_context_callable: a reference to a python function that will be
+        called while passing it a ```root_folder``` and a ```folder``` string. The function
+        should return a dictionary containing the context attributes that it could extract from the paths.
+    :type extract_context_callable: python callable
+    :param accept_folder_callable: a reference to a python function that will be
+        called while passing it a ```path``` string. The function
+        should return True if it accepts the folder and the operator will trigger a
+        new DAG run of that folder, False otherwise.
+    :type accept_folder_callable: python callable
     :param depth: Depth of folders to traverse. Default: 1
     :type depth: int
     """
@@ -70,17 +83,21 @@ class FlatFolderOperator(FolderOperator):
     @apply_defaults
     def __init__(
             self,
+            dataset,
             folder,
             trigger_dag_id,
-            python_callable=default_trigger_dagrun,
-            dataset=None,
+            trigger_dag_run_callable=default_trigger_dagrun,
+            extract_context_callable=default_extract_context,
+            accept_folder_callable=None,
             depth=1,
             *args, **kwargs):
-        super(FlatFolderOperator, self).__init__(python_callable=python_callable,
+        super(FlatFolderOperator, self).__init__(dataset=dataset,
                                                  trigger_dag_id=trigger_dag_id,
-                                                 dataset=dataset,
+                                                 trigger_dag_run_callable=trigger_dag_run_callable,
+                                                 extract_context_callable=extract_context_callable,
                                                  *args, **kwargs)
         self.folder = folder
+        self.accept_folder_callable = accept_folder_callable
         self.depth = depth
 
     def execute(self, context):
@@ -96,7 +113,8 @@ class FlatFolderOperator(FolderOperator):
             logging.info(
                 'Prepare trigger for preprocessing : %s', str(folder))
 
-            self.trigger_dag_run(context, {'folder': folder, 'relative_context_path': rel_folder}, session)
+            self.trigger_dag_run(context, self.folder, folder, session)
+            self.offset = self.offset + 1
         else:
             if rel_folder == '.':
                 rel_folder = ''
@@ -104,7 +122,8 @@ class FlatFolderOperator(FolderOperator):
                 if not (fname in ['.git', '.svn', '.tmp']):
                     path = os.path.join(folder, fname)
                     rel_path = "%s/%s" % (rel_folder, fname)
-                    if os.path.isdir(path):
+                    if os.path.isdir(path) and \
+                            (self.accept_folder_callable is None or self.accept_folder_callable(path=path)):
                         self.scan_dirs(path, context, session=session, depth=depth + 1, rel_folder=rel_path)
 
 
@@ -120,7 +139,7 @@ class DailyFolderOperator(FolderOperator):
     :type folder: str
     :param trigger_dag_id: the dag_id to trigger
     :type trigger_dag_id: str
-    :param python_callable: a reference to a python function that will be
+    :param trigger_dag_run_callable: a reference to a python function that will be
         called while passing it the ``context`` object and a placeholder
         object ``obj`` for your callable to fill and return if you want
         a DagRun created. This ``obj`` object contains a ``run_id`` and
@@ -129,7 +148,16 @@ class DailyFolderOperator(FolderOperator):
         the payload has to be a picklable object that will be made available
         to your tasks while executing that DAG run. Your function header
         should look like ``def foo(context, dag_run_obj):``
-    :type python_callable: python callable
+    :type trigger_dag_run_callable: python callable
+    :param extract_context_callable: a reference to a python function that will be
+        called while passing it a ```root_folder``` and a ```folder``` string. The function
+        should return a dictionary containing the context attributes that it could extract from the paths.
+    :type extract_context_callable: python callable
+    :param accept_folder_callable: a reference to a python function that will be
+        called while passing it a ```path``` string. The function
+        should return True if it accepts the folder and the operator will trigger a
+        new DAG run of that folder, False otherwise.
+    :type accept_folder_callable: python callable
     :param dataset: name of the dataset
     :type dataset: str
     :param look_for_ready_marker_file: a reference to a python function that will be
@@ -146,18 +174,22 @@ class DailyFolderOperator(FolderOperator):
     @apply_defaults
     def __init__(
             self,
+            dataset,
             folder,
             trigger_dag_id,
-            python_callable=default_trigger_dagrun,
-            dataset=None,
+            trigger_dag_run_callable=default_trigger_dagrun,
+            extract_context_callable=default_extract_context,
+            accept_folder_callable=None,
             look_for_ready_marker_file=default_look_for_ready_marker_file,
             ready_marker_file='.ready',
             *args, **kwargs):
-        super(DailyFolderOperator, self).__init__(python_callable=python_callable,
+        super(DailyFolderOperator, self).__init__(dataset=dataset,
                                                   trigger_dag_id=trigger_dag_id,
-                                                  dataset=dataset,
+                                                  trigger_dag_run_callable=trigger_dag_run_callable,
+                                                  extract_context_callable=extract_context_callable,
                                                   *args, **kwargs)
         self.folder = folder
+        self.accept_folder_callable = accept_folder_callable
         self.look_for_ready_marker_file = look_for_ready_marker_file
         self.ready_marker_file = ready_marker_file
 
@@ -171,7 +203,6 @@ class DailyFolderOperator(FolderOperator):
         if not os.path.exists(folder):
             raise AirflowSkipException
 
-        rel_daily_folder = daily_folder_date.strftime('%Y'), daily_folder_date.strftime('%Y%m%d')
         daily_folder = os.path.join(folder, daily_folder_date.strftime(
             '%Y'), daily_folder_date.strftime('%Y%m%d'))
 
@@ -180,9 +211,10 @@ class DailyFolderOperator(FolderOperator):
 
         ready_marker_file = os.path.join(daily_folder, self.ready_marker_file)
         if not self.look_for_ready_marker_file(daily_folder_date) or os.access(ready_marker_file, os.R_OK):
+            if self.accept_folder_callable is None or self.accept_folder_callable(path=daily_folder):
 
-            logging.info(
-                'Prepare trigger for preprocessing : %s', str(daily_folder))
+                logging.info(
+                    'Prepare trigger for preprocessing : %s', str(daily_folder))
 
-            self.trigger_dag_run(context, {'folder': daily_folder, 'relative_context_path': rel_daily_folder}, session)
-            self.offset = self.offset - 1
+                self.trigger_dag_run(context, self.folder, daily_folder, session)
+                self.offset = self.offset + 1

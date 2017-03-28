@@ -1,4 +1,4 @@
-""" Pipeline operators package """
+"""Pipeline operators package"""
 
 from .prepare_pipeline_operator import PreparePipelineOperator
 from .bash_pipeline_operator import BashPipelineOperator

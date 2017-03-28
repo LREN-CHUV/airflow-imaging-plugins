@@ -1,1 +1,1 @@
-""" Scan folder package """
+"""Scan folder package"""
