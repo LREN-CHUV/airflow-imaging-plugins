@@ -1,13 +1,13 @@
 description: "Airflow plugins providing support for preprocessing of neuroimaging data"
 
-long_description: "
-The following packages are provided:
+long_description: |
+  The following packages are provided:
 
-* airflow_freespace: Sensors that check the amount of free space on the disk and waits until enough free space is available
-* airflow_pipeline: Operators and helpers to build generic processing pipelines
-* airflow_scan_folder: Operators used to scan folders for new work
-* airflow_spm: Operators adapting Matlab and [SPM 12](http://www.fil.ion.ucl.ac.uk/spm) to work inside Airflow
-"
+  * airflow_freespace: Sensors that check the amount of free space on the disk and waits until enough free space is available
+  * airflow_pipeline: Operators and helpers to build generic processing pipelines
+  * airflow_scan_folder: Operators used to scan folders for new work
+  * airflow_spm: Operators adapting Matlab and [SPM 12](http://www.fil.ion.ucl.ac.uk/spm) to work inside Airflow
+
 
 authors:
   - author: Ludovic Claude
