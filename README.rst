@@ -57,18 +57,16 @@ List of plugins
    SPM, where a 'pipeline' is a function implemented in SPM
 -  airflow\_freespace.operators.FreeSpaceSensor: Waits for enough free
    disk space on the disk.
--  airflow\_scan\_folder.operators.ScanFolderOperator: Triggers a DAG
-   run for a specified ``dag_id`` for each scan folder discovered in a
-   folder.
+-  airflow\_scan\_folder.operators.ScanFlatFolderOperator: Triggers a
+   DAG run for a specified ``dag_id`` for each scan folder discovered in
+   a folder.
 -  airflow\_scan\_folder.operators.ScanDailyFolderOperator: Triggers a
    DAG run for a specified ``dag_id`` for each scan folder discovered in
    a daily folder.
--  airflow\_scan\_folder.operators.FlatFolderOperator: Triggers a DAG
-   run for a specified ``dag_id`` for each folder discovered in a parent
-   folder.
--  airflow\_scan\_folder.operators.DailyFolderOperator: Triggers a DAG
-   run for a specified ``dag_id`` for the daily folder matching path
-   root\_folder/yyyy/yyyyMMdd where the date used is the execution date.
+-  airflow\_scan\_folder.operators.ScanFlatFolderPipelineOperator:
+   Triggers a DAG run for a specified ``dag_id`` for each folder
+   discovered in a parent folder, where the parent folder location is
+   provided by the pipeline XCOMs.
 -  airflow\_pipeline.operators.PreparePipelineOperator: An operator that
    prepares the pipeline
 -  airflow\_pipeline.operators.PythonPipelineOperator: A PythonOperator
