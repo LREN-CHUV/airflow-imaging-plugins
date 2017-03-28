@@ -65,7 +65,6 @@ class ScanFlatFolderPipelineOperator(ScanFlatFolderOperator, TransferPipelineXCo
     @apply_defaults
     def __init__(
             self,
-            folder,
             trigger_dag_id,
             trigger_dag_run_callable=default_trigger_dagrun,
             extract_context_callable=default_extract_context,
