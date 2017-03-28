@@ -199,3 +199,6 @@ class FolderOperator(BaseOperator):
                 self.trigger_dag_run(context, root_folder, folder)
         else:
             logging.info("Criteria not met, moving on")
+
+    def execute(self, context):
+        pass
