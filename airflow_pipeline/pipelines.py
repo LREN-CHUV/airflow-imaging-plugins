@@ -28,7 +28,7 @@ def pipeline_trigger(parent_task):
 
         ti = context['task_instance']
         dr = context['dag_run']
-        dag_run_obj.payload = {}
+        dag_run_obj.payload = dict()
         for key in PIPELINE_XCOMS:
             dag_run_obj.payload[key] = ti.xcom_pull(
                 task_ids=parent_task, key=key)
@@ -44,7 +44,7 @@ class TransferPipelineXComs(object):
     def __init__(self, parent_task, dataset_config):
         self.parent_task = parent_task
         self.dataset_config = dataset_config
-        self.pipeline_xcoms = {}
+        self.pipeline_xcoms = dict()
         self.incoming_parameters = dedent("""
           # Task {{ task.task_id }}
           Parent task = $parent_task

@@ -86,7 +86,7 @@ class BashPipelineOperator(BashOperator, TransferPipelineXComs):
         BashOperator.__init__(self,
                               bash_command=bash_command,
                               xcom_push=xcom_push,
-                              env=env or {},
+                              env=env or dict(),
                               output_encoding=output_encoding,
                               *args, **kwargs)
         TransferPipelineXComs.__init__(self, parent_task, dataset_config)
@@ -99,7 +99,7 @@ class BashPipelineOperator(BashOperator, TransferPipelineXComs):
 
     def execute(self, context):
 
-        self.pipeline_xcoms = self.pipeline_xcoms or {}
+        self.pipeline_xcoms = self.pipeline_xcoms or dict()
         output_dir = self.output_folder_callable(
             **self.pipeline_xcoms)
 

@@ -96,8 +96,8 @@ class PythonPipelineOperator(PythonOperator, TransferPipelineXComs):
         self.read_pipeline_xcoms(context, expected=['dataset'])
 
     def execute(self, context):
-        self.op_kwargs = self.op_kwargs or {}
-        self.pipeline_xcoms = self.pipeline_xcoms or {}
+        self.op_kwargs = self.op_kwargs or dict()
+        self.pipeline_xcoms = self.pipeline_xcoms or dict()
         if self.provide_context:
             context.update(self.op_kwargs)
             context.update(self.pipeline_xcoms)

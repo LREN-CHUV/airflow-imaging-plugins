@@ -170,7 +170,7 @@ class DockerPipelineOperator(DockerOperator, TransferPipelineXComs):
 
     def execute(self, context):
 
-        self.pipeline_xcoms = self.pipeline_xcoms or {}
+        self.pipeline_xcoms = self.pipeline_xcoms or dict()
         host_input_dir = self.pipeline_xcoms['folder']
         host_output_dir = None
         if self.output_folder_callable:
