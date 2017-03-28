@@ -23,8 +23,6 @@ class ScanFlatFolderPipelineOperator(ScanFlatFolderOperator, TransferPipelineXCo
     The parent folder is given by upstream pipeline XCOMs, and this operator should be last one
     called in the currewnt DAG as pipeline XCOMs are not transmitted downstream.
 
-    :param dataset: name of the dataset
-    :type dataset: str
     :param trigger_dag_id: the dag_id to trigger
     :type trigger_dag_id: str
     :param trigger_dag_run_callable: a reference to a python function that will be
@@ -67,7 +65,6 @@ class ScanFlatFolderPipelineOperator(ScanFlatFolderOperator, TransferPipelineXCo
     @apply_defaults
     def __init__(
             self,
-            dataset,
             folder,
             trigger_dag_id,
             trigger_dag_run_callable=default_trigger_dagrun,
@@ -77,7 +74,7 @@ class ScanFlatFolderPipelineOperator(ScanFlatFolderOperator, TransferPipelineXCo
             parent_task=None,
             dataset_config=None,
             *args, **kwargs):
-        super(ScanFlatFolderPipelineOperator, self).__init__(dataset=dataset,
+        super(ScanFlatFolderPipelineOperator, self).__init__(dataset=None,  # will be filled by pipeline XCOMs
                                                              folder=None,
                                                              trigger_dag_id=trigger_dag_id,
                                                              trigger_dag_run_callable=trigger_dag_run_callable,

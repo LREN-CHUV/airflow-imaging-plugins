@@ -20,22 +20,24 @@ def default_look_for_ready_marker_file(daily_folder_date):
     return daily_folder_date.date() == datetime.today().date()
 
 
-def default_extract_context(root_folder, folder):
+def default_extract_context(root_folder, folder, pipeline_xcoms=dict()):
     """Extract the folder and relative_context_path"""
     context = dict()
+    context.update(pipeline_xcoms)
     context['folder'] = folder
     context['root_folder'] = root_folder
     context['relative_context_path'] = os.path.relpath(folder, start=root_folder)
     return context
 
 
-def extract_context_from_session_path(root_folder, folder):
+def extract_context_from_session_path(root_folder, folder, pipeline_xcoms=dict()):
     """
     Extract the folder, relative_context_path and session_id from a folder.
 
     Assumes that the last part of the name represents a session ID
     """
     context = dict()
+    context.update(pipeline_xcoms)
     context['folder'] = folder
     context['root_folder'] = root_folder
     context['relative_context_path'] = os.path.relpath(folder, start=root_folder)
@@ -125,8 +127,9 @@ class FolderOperator(BaseOperator):
         should look like ``def foo(context, dag_run_obj):``
     :type trigger_dag_run_callable: python callable
     :param extract_context_callable: a reference to a python function that will be
-        called while passing it a ```root_folder``` and a ```folder``` string. The function
-        should return a dictionary containing the context attributes that it could extract from the paths.
+        called while passing it a ```root_folder```, a ```folder``` string and optionally a
+        ```pipeline_xcoms``` dictionary. The function should return a dictionary containing
+        the context attributes that it could extract from the paths.
     :type extract_context_callable: python callable
     :param dataset: name of the dataset
     :type dataset: str
@@ -149,6 +152,7 @@ class FolderOperator(BaseOperator):
         self.trigger_dag_run_callable = trigger_dag_run_callable
         self.extract_context_callable = extract_context_callable
         self.offset = 1
+        self.pipeline_xcoms = None
 
     @provide_session
     def trigger_dag_run(self, context, root_folder, folder, session=None):
@@ -156,7 +160,8 @@ class FolderOperator(BaseOperator):
         context_params = context['params']
         context_params['dataset'] = self.dataset
         if self.extract_context_callable:
-            context_params.update(self.extract_context_callable(root_folder, folder))
+            context_params.update(self.extract_context_callable(
+                root_folder=root_folder, folder=folder, pipeline_xcoms=self.pipeline_xcoms))
 
         while True:
             dr_time = round_up_time(datetime.now() - timedelta(minutes=self.offset))
