@@ -213,7 +213,7 @@ class DockerPipelineOperator(DockerOperator, TransferPipelineXComs):
         if host_output_dir:
             self.pipeline_xcoms['folder'] = host_output_dir
         # Take last 10 lines of logs
-        self.pipeline_xcoms['output'] = '\n'.join(logs.split('\n')[-10:]).encode()
+        self.pipeline_xcoms['output'] = logs  # TODO use something like this: '\n'.join(logs.split('\n')[-10:])
         self.pipeline_xcoms['error'] = ''
 
         if ':' not in self.image:
