@@ -35,8 +35,8 @@ arguments the following variables coming from XCOM:
 
 -  folder
 -  session\_id
--  participant\_id
--  scan\_date
+-  participant\_id (optional)
+-  scan\_date (optional)
 -  output
 -  error
 -  dataset
