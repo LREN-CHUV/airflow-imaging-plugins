@@ -1,6 +1,10 @@
 
 # Changelog
 
+## 2.1.0 - 2017-03-28
+
+* Remove dataset argument from ScanFlatFolderPipelineOperator
+
 ## 2.0.0 - 2017/03/28
 
 * Refactor airflow_scan_operator package.
