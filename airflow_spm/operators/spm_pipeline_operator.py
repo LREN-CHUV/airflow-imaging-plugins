@@ -141,9 +141,8 @@ class SpmPipelineOperator(PythonOperator, TransferPipelineXComs):
     def pre_execute(self, context):
         super(SpmPipelineOperator, self).pre_execute(context)
         self.read_pipeline_xcoms(context, expected=[
-                                 'folder', 'session_id', 'participant_id', 'scan_date',
-                                 'dataset', 'matlab_version', 'spm_version', 'spm_revision',
-                                 'provenance_details'])
+                                 'folder', 'session_id', 'dataset', 'matlab_version',
+                                 'spm_version', 'spm_revision', 'provenance_details'])
         self.op_kwargs.update(self.pipeline_xcoms)
         self.out = StringIO()
         self.err = StringIO()

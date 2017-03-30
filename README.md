@@ -23,8 +23,8 @@ All Python callback functions provided to those operators can use as arguments t
 
 * folder
 * session_id
-* participant_id
-* scan_date
+* participant_id (optional)
+* scan_date (optional)
 * output
 * error
 * dataset

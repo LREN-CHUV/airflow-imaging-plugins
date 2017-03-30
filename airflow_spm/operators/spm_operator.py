@@ -85,6 +85,7 @@ class SpmOperator(PythonOperator):
                 for path in self.matlab_paths:
                     self.engine.addpath(path)
             self.engine.addpath(spm_dir)
+            logging.info("SPM started...")
         else:
             msg = 'Matlab has not started on this node'
             logging.error(msg)
