@@ -1,6 +1,10 @@
 
 # Changelog
 
+## 2.2.0 - 2017-03-30
+
+* SpmPipelineOperator inherits from SpmOperator
+
 ## 2.1.0 - 2017-03-28
 
 * Remove dataset argument from ScanFlatFolderPipelineOperator

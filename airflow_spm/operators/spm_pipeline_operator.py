@@ -9,7 +9,6 @@
 """
 
 
-from airflow.operators.python_operator import PythonOperator
 from airflow.utils import apply_defaults
 from airflow.exceptions import AirflowSkipException
 from airflow_spm.errors import SPMError
@@ -25,6 +24,8 @@ from io import StringIO
 from subprocess import CalledProcessError
 from subprocess import check_output
 
+from .spm_operator import SpmOperator
+
 
 def default_validate_result(return_value, task_id):
     if return_value == 0.0:
@@ -38,7 +39,7 @@ def default_output_folder(folder):
     return folder
 
 
-class SpmPipelineOperator(PythonOperator, TransferPipelineXComs):
+class SpmPipelineOperator(SpmOperator, TransferPipelineXComs):
 
     """
     Executes a pipeline on SPM, where a 'pipeline' is a function implemented in SPM.
@@ -117,23 +118,22 @@ class SpmPipelineOperator(PythonOperator, TransferPipelineXComs):
             on_failure_trigger_dag_id=None,
             dataset_config=None,
             *args, **kwargs):
-        PythonOperator.__init__(self,
-                                python_callable=spm_arguments_callable,
-                                op_args=op_args,
-                                op_kwargs=op_kwargs,
-                                provide_context=provide_context,
-                                templates_dict=templates_dict,
-                                templates_exts=templates_exts,
-                                *args, **kwargs)
+        SpmOperator.__init__(self,
+                             python_callable=spm_arguments_callable,
+                             op_args=op_args,
+                             op_kwargs=op_kwargs,
+                             provide_context=provide_context,
+                             templates_dict=templates_dict,
+                             templates_exts=templates_exts,
+                             matlab_paths=matlab_paths,
+                             *args, **kwargs)
         TransferPipelineXComs.__init__(self, parent_task, dataset_config)
 
         self.spm_function = spm_function
-        self.matlab_paths = matlab_paths
         self.validate_result_callable = validate_result_callable
         self.output_folder_callable = output_folder_callable
         self.on_skip_trigger_dag_id = on_skip_trigger_dag_id
         self.on_failure_trigger_dag_id = on_failure_trigger_dag_id
-        self.engine = None
         self.out = None
         self.err = None
         self.provenance_previous_step_id = None
@@ -149,7 +149,7 @@ class SpmPipelineOperator(PythonOperator, TransferPipelineXComs):
 
     def execute(self, context):
         if self.engine:
-            params = super(SpmPipelineOperator, self).execute(context)
+            params = self.python_execute(context)
             output_folder = self.output_folder_callable(
                 *self.op_args, **self.op_kwargs)
             result_value = None
@@ -246,13 +246,3 @@ class SpmPipelineOperator(PythonOperator, TransferPipelineXComs):
             msg = 'Matlab has not started on this node'
             logging.error(msg)
             raise SPMError(msg)
-
-    def on_kill(self):
-        if self.engine:
-            self.engine.exit()
-            self.engine = None
-
-    def post_execute(self, context):
-        if self.engine:
-            self.engine.exit()
-            self.engine = None
