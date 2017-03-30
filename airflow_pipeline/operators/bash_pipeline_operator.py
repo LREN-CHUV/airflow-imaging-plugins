@@ -107,7 +107,8 @@ class BashPipelineOperator(BashOperator, TransferPipelineXComs):
             # Ensure that there is no data in the output folder
             try:
                 if os.path.exists(output_dir):
-                    os.removedirs(output_dir)
+                    rmtree(output_dir, ignore_errors=True)
+                    os.makedirs(output_dir)
             except (OSError, Exception):
                 logging.error("Cannot cleanup output directory %s before executing Bash command",
                               output_dir)

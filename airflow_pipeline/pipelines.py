@@ -103,7 +103,7 @@ class TransferPipelineXComs(object):
 
     def write_pipeline_xcoms(self, context):
         for key, value in self.pipeline_xcoms.items():
-            logging.warning("Write XCOM %s=%s", key, value)
+            logging.debug("Write XCOM %s=%s", key, value)
             context['ti'].xcom_push(key=key, value=value)
 
     def track_provenance(self, output_folder, software_versions=None):

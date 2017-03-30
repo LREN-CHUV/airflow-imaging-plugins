@@ -181,8 +181,8 @@ class DockerPipelineOperator(DockerOperator, TransferPipelineXComs):
             # Ensure that there is no data in the output folder
             try:
                 if os.path.exists(host_output_dir):
-                    os.removedirs(host_output_dir)
-                os.makedirs(host_output_dir)
+                    rmtree(host_output_dir, ignore_errors=True)
+                    os.makedirs(host_output_dir)
             except (OSError, Exception):
                 logging.error("Cannot cleanup output directory %s before executing Docker container %s",
                               host_output_dir, self.image)
