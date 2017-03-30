@@ -6,7 +6,7 @@ machine:
 dependencies:
   override:
     - docker info
-    - pip install pre-commit ansible-lint
+    - pip install pre-commit
 test:
   pre:
     - pip install psycopg2
