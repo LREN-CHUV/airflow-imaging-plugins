@@ -133,6 +133,7 @@ class SpmPipelineOperator(PythonOperator, TransferPipelineXComs):
         self.output_folder_callable = output_folder_callable
         self.on_skip_trigger_dag_id = on_skip_trigger_dag_id
         self.on_failure_trigger_dag_id = on_failure_trigger_dag_id
+        self.engine = None
         self.out = None
         self.err = None
         self.provenance_previous_step_id = None
