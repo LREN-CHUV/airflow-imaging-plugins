@@ -198,6 +198,12 @@ class DockerPipelineOperator(DockerOperator, TransferPipelineXComs):
             logs = super(DockerPipelineOperator, self).execute(context)
         except AirflowException:
             logs = self.cli.logs(container=self.container['Id'])
+            for line in logs:
+                line = line.strip()
+                if hasattr(line, 'decode'):
+                    line = line.decode('utf-8')
+            last_10_logs = '\n'.join(line.split('\n')[-10:])
+
             logging.error("Docker container %s failed", self.image)
             logging.error("-----------")
             logging.error("Output:")
@@ -213,7 +219,7 @@ class DockerPipelineOperator(DockerOperator, TransferPipelineXComs):
         if host_output_dir:
             self.pipeline_xcoms['folder'] = host_output_dir
         # Take last 10 lines of logs
-        self.pipeline_xcoms['output'] = logs  # TODO use something like this: '\n'.join(logs.split('\n')[-10:])
+        self.pipeline_xcoms['output'] = last_10_logs
         self.pipeline_xcoms['error'] = ''
 
         if ':' not in self.image:
