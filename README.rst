@@ -1,4 +1,4 @@
-|License| |Codacy Badge| |Code Health| |PyPI|
+|License| |Codacy Badge| |Code Health| |PyPI| |CHUV|
 
 Airflow Imaging plugins
 =======================
@@ -103,3 +103,5 @@ Airflow setup for MRI scans pipeline:
    :target: https://landscape.io/github/LREN-CHUV/airflow-imaging-plugins/master
 .. |PyPI| image:: https://img.shields.io/pypi/v/airflow-imaging-plugins.svg
    :target: https://pypi.python.org/pypi/airflow-imaging-plugins/
+.. |CHUV| image:: https://img.shields.io/badge/CHUV-LREN-AF4C64.svg
+   :target: https://www.unil.ch/lren/en/home.html
