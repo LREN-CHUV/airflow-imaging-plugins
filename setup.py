@@ -1,7 +1,7 @@
 # -*- coding: UTF-8 -*-
 from setuptools import setup, find_packages
 
-_version = '2.2.2'
+_version = '2.2.3'
 _packages = find_packages(exclude=["docs", "*.tests", "*.tests.*", "tests.*", "tests"])
 
 _short_description = ("pylint-common is a Pylint plugin to improve Pylint "
