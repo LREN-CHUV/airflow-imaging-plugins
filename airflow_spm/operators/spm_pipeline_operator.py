@@ -221,7 +221,7 @@ class SpmPipelineOperator(SpmOperator, TransferPipelineXComs):
                         version = check_output('cd "%s" ; git describe --tags' % path, shell=True).strip()
                         provenance_details['spm_scripts'].append({
                             'path': path,
-                            'version': version
+                            'version': str(version)
                         })
                     except CalledProcessError:
                         logging.warning('Cannot find the Git version on folder %s', path)
