@@ -113,8 +113,8 @@ class PythonPipelineOperator(PythonOperator, TransferPipelineXComs):
         if isinstance(return_value, dict):
             self.pipeline_xcoms.update(return_value)
             if 'folder' in return_value:
-                self.track_provenance(return_value['folder'], json.dumps(
-                    self.software_versions) if self.software_versions else '{}')
+                self.track_provenance(
+                    return_value['folder'], json.dumps(self.software_versions) if self.software_versions else '{}')
 
         self.write_pipeline_xcoms(context)
 

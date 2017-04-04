@@ -15,6 +15,7 @@ from airflow_pipeline.pipelines import TransferPipelineXComs
 
 import logging
 import os
+import json
 
 from shutil import rmtree
 
@@ -139,7 +140,7 @@ class BashPipelineOperator(BashOperator, TransferPipelineXComs):
         self.pipeline_xcoms['error'] = ''
 
         software_versions = {'others': '{"bash_command"="%s"}' % self.bash_command}
-        self.track_provenance(output_dir, software_versions)
+        self.track_provenance(output_dir, json.dumps(software_versions) if software_versions else '{}')
 
         self.write_pipeline_xcoms(context)
 

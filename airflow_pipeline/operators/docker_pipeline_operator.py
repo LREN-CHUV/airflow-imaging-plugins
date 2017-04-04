@@ -15,6 +15,7 @@ from airflow_pipeline.pipelines import TransferPipelineXComs
 
 import logging
 import os
+import json
 
 from shutil import rmtree
 
@@ -225,7 +226,8 @@ class DockerPipelineOperator(DockerOperator, TransferPipelineXComs):
         software_versions = {'fn_called': image, 'fn_version': version,
                              'others': '{"docker_image"="%s:%s"}' % (image, version)}
         if host_output_dir:
-            self.track_provenance(host_output_dir, software_versions)
+            self.track_provenance(
+                host_output_dir, json.dumps(software_versions) if software_versions else '{}')
 
         self.write_pipeline_xcoms(context)
 
