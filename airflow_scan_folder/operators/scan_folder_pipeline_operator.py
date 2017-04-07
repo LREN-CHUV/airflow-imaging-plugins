@@ -72,6 +72,7 @@ class ScanFlatFolderPipelineOperator(ScanFlatFolderOperator, TransferPipelineXCo
             depth=1,
             parent_task=None,
             dataset_config=None,
+            organised_folder=True,
             *args, **kwargs):
         super(ScanFlatFolderPipelineOperator, self).__init__(dataset=None,  # will be filled by pipeline XCOMs
                                                              folder=None,
@@ -81,7 +82,7 @@ class ScanFlatFolderPipelineOperator(ScanFlatFolderOperator, TransferPipelineXCo
                                                              accept_folder_callable=accept_folder_callable,
                                                              depth=depth,
                                                              *args, **kwargs)
-        TransferPipelineXComs.__init__(self, parent_task, dataset_config)
+        TransferPipelineXComs.__init__(self, parent_task, dataset_config, organised_folder)
 
     def root_folder(self, context):
         return self.pipeline_xcoms['folder']

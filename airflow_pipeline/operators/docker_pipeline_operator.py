@@ -103,6 +103,8 @@ class DockerPipelineOperator(DockerOperator, TransferPipelineXComs):
         E.g.: LREN data. In such a case, you have to enable this flag. This will use PatientID + StudyID as a session
         ID.
     :type dataset_config: dict
+    :param organised_folder: disable this flag if the input folder is not organised yet.
+    :type organised_folder: bool
     """
 
     template_fields = ('incoming_parameters', 'command', 'volumes')
@@ -137,6 +139,7 @@ class DockerPipelineOperator(DockerOperator, TransferPipelineXComs):
             output_folder_callable=default_output_folder,
             on_failure_trigger_dag_id=None,
             dataset_config=None,
+            organised_folder=True,
             *args, **kwargs):
 
         DockerOperator.__init__(self,
@@ -160,7 +163,7 @@ class DockerPipelineOperator(DockerOperator, TransferPipelineXComs):
                                 xcom_push=xcom_push,
                                 xcom_all=xcom_all,
                                 *args, **kwargs)
-        TransferPipelineXComs.__init__(self, parent_task, dataset_config)
+        TransferPipelineXComs.__init__(self, parent_task, dataset_config, organised_folder)
         self.container_input_dir = container_input_dir
         self.container_output_dir = container_output_dir
         self.output_folder_callable = output_folder_callable

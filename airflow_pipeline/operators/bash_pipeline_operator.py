@@ -64,6 +64,8 @@ class BashPipelineOperator(BashOperator, TransferPipelineXComs):
         E.g.: LREN data. In such a case, you have to enable this flag. This will use PatientID + StudyID as a session
         ID.
     :type dataset_config: dict
+    :param organised_folder: disable this flag if the input folder is not organised yet.
+    :type organised_folder: bool
     """
 
     template_fields = ('incoming_parameters', 'bash_command', 'env')
@@ -82,6 +84,7 @@ class BashPipelineOperator(BashOperator, TransferPipelineXComs):
             auto_cleanup_output_folder=False,
             on_failure_trigger_dag_id=None,
             dataset_config=None,
+            organised_folder=True,
             *args, **kwargs):
 
         BashOperator.__init__(self,
@@ -90,7 +93,7 @@ class BashPipelineOperator(BashOperator, TransferPipelineXComs):
                               env=env or dict(),
                               output_encoding=output_encoding,
                               *args, **kwargs)
-        TransferPipelineXComs.__init__(self, parent_task, dataset_config)
+        TransferPipelineXComs.__init__(self, parent_task, dataset_config, organised_folder)
         self.output_folder_callable = output_folder_callable
         self.auto_cleanup_output_folder = auto_cleanup_output_folder
         self.on_failure_trigger_dag_id = on_failure_trigger_dag_id

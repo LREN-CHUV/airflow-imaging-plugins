@@ -40,10 +40,11 @@ def pipeline_trigger(parent_task):
 
 class TransferPipelineXComs(object):
 
-    def __init__(self, parent_task, dataset_config):
+    def __init__(self, parent_task, dataset_config, organised_folder):
         self.parent_task = parent_task
         self.dataset_config = dataset_config
         self.pipeline_xcoms = dict()
+        self.organised_folder = organised_folder
         self.incoming_parameters = dedent("""
           # Task {{ task.task_id }}
           Parent task = $parent_task
@@ -110,7 +111,8 @@ class TransferPipelineXComs(object):
         provenance_id = create_provenance(self.pipeline_xcoms['dataset'], software_versions=software_versions)
         provenance_step_id = visit(output_folder, provenance_id, self.task_id,
                                    previous_step_id=self.previous_step_id(),
-                                   config=self.dataset_config)
+                                   config=self.dataset_config,
+                                   is_organised=self.organised_folder)
         self.pipeline_xcoms['provenance_previous_step_id'] = provenance_step_id
 
     def trigger_dag(self, context, dag_id, output, error=''):

@@ -59,6 +59,8 @@ class PythonPipelineOperator(PythonOperator, TransferPipelineXComs):
         E.g.: LREN data. In such a case, you have to enable this flag. This will use PatientID + StudyID as a session
         ID.
     :type dataset_config: dict
+    :param organised_folder: disable this flag if the input folder is not organised yet.
+    :type organised_folder: bool
     """
 
     template_fields = ('templates_dict', 'incoming_parameters', )
@@ -78,6 +80,7 @@ class PythonPipelineOperator(PythonOperator, TransferPipelineXComs):
             on_failure_trigger_dag_id=None,
             software_versions=None,
             dataset_config=None,
+            organised_folder=True,
             *args, **kwargs):
 
         PythonOperator.__init__(self,
@@ -88,7 +91,7 @@ class PythonPipelineOperator(PythonOperator, TransferPipelineXComs):
                                 templates_dict=templates_dict,
                                 templates_exts=templates_exts,
                                 *args, **kwargs)
-        TransferPipelineXComs.__init__(self, parent_task, dataset_config)
+        TransferPipelineXComs.__init__(self, parent_task, dataset_config, organised_folder)
         self.on_failure_trigger_dag_id = on_failure_trigger_dag_id
         self.software_versions = software_versions
 
