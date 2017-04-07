@@ -94,6 +94,8 @@ class SpmPipelineOperator(SpmOperator, TransferPipelineXComs):
         E.g.: LREN data. In such a case, you have to enable this flag. This will use PatientID + StudyID as a session
         ID.
     :type dataset_config: list
+    :param organised_folder: disable this flag if the input folder is not organised yet.
+    :type organised_folder: bool
     """
 
     ui_color = '#c2560a'
@@ -117,6 +119,7 @@ class SpmPipelineOperator(SpmOperator, TransferPipelineXComs):
             on_skip_trigger_dag_id=None,
             on_failure_trigger_dag_id=None,
             dataset_config=None,
+            organised_folder=True,
             *args, **kwargs):
         SpmOperator.__init__(self,
                              python_callable=spm_arguments_callable,
@@ -127,7 +130,7 @@ class SpmPipelineOperator(SpmOperator, TransferPipelineXComs):
                              templates_exts=templates_exts,
                              matlab_paths=matlab_paths,
                              *args, **kwargs)
-        TransferPipelineXComs.__init__(self, parent_task, dataset_config)
+        TransferPipelineXComs.__init__(self, parent_task, dataset_config, organised_folder)
 
         self.spm_function = spm_function
         self.validate_result_callable = validate_result_callable
