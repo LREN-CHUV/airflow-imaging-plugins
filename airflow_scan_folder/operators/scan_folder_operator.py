@@ -95,9 +95,9 @@ class ScanFlatFolderOperator(FolderOperator):
 
         if depth == self.depth:
             logging.info(
-                'Prepare trigger for preprocessing : %s', str(folder))
+                'Prepare trigger for %s : %s', self.trigger_dag_id, str(folder))
 
-            self.trigger_dag_run(context, self.root_folder(context), folder, session)
+            self.trigger_dag_run(context, root_folder=self.root_folder(context), folder=folder, session=session)
             self.offset += 1
         else:
             for fname in os.listdir(folder):

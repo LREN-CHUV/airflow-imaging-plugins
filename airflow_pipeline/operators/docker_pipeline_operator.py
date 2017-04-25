@@ -181,7 +181,9 @@ class DockerPipelineOperator(DockerOperator, TransferPipelineXComs):
             host_output_dir = self.output_folder_callable(
                 **self.pipeline_xcoms)
 
+        logging.info("Input folder: %s", host_input_dir)
         if host_output_dir:
+            logging.info("Output folder: %s", host_output_dir)
             # Ensure that there is no data in the output folder
             try:
                 if os.path.exists(host_output_dir):

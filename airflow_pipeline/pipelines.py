@@ -9,7 +9,7 @@ from textwrap import dedent
 from data_tracking.files_recording import create_provenance, visit
 
 
-PIPELINE_XCOMS = ['folder', 'session_id', 'output', 'error', 'dataset',
+PIPELINE_XCOMS = ['root_folder', 'folder', 'session_id', 'output', 'error', 'dataset',
                   'matlab_version', 'spm_version', 'spm_revision', 'provenance_details',
                   'provenance_previous_step_id', 'relative_context_path']
 

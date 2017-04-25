@@ -43,11 +43,16 @@ class PreparePipelineOperator(BaseOperator):
 
           ## Pipeline {{ dag.dag_id }} parameters
 
+          {% if 'root_folder' in dag_run.conf -%}
+          root_folder = {{ dag_run.conf['root_folder'] }}
+          {%- endif %}
           folder = {{ dag_run.conf['folder'] }}
           dataset = {{ dag_run.conf['dataset'] }}
           {% if 'session_id' in dag_run.conf -%}
           session_id = {{ dag_run.conf['session_id'] }}
           {%- endif %}
+
+          All pipeline parameters: {{ dag_run.conf }}
         """)
         self.include_spm_facts = include_spm_facts
 
@@ -55,6 +60,10 @@ class PreparePipelineOperator(BaseOperator):
         dr = context['dag_run']
         dataset = dr.conf['dataset']
         folder = dr.conf["folder"]
+        if 'root_folder' in dr.conf:
+            root_folder = dr.conf['root_folder']
+        else:
+            root_folder = None
         if 'session_id' in dr.conf:
             session_id = dr.conf['session_id']
             logging.info('dataset %s, folder %s, session_id %s', dataset, folder, session_id)
@@ -78,6 +87,8 @@ class PreparePipelineOperator(BaseOperator):
         self.xcom_push(context, key='folder', value=folder)
         self.xcom_push(context, key='dataset', value=dataset)
         self.xcom_push(context, key='provenance_previous_step_id', value='-1')
+        if root_folder:
+            self.xcom_push(context, key='root_folder', value=root_folder)
         if session_id:
             self.xcom_push(context, key='session_id', value=session_id)
         if relative_context_path:
