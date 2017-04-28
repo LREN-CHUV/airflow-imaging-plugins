@@ -2,6 +2,20 @@
 
 set -e
 
+get_script_dir () {
+     SOURCE="${BASH_SOURCE[0]}"
+
+     while [ -h "$SOURCE" ]; do
+          DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+          SOURCE="$( readlink "$SOURCE" )"
+          [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE"
+     done
+     cd -P "$( dirname "$SOURCE" )"
+     pwd
+}
+
+WORKSPACE=$(get_script_dir)
+
 # Build
 echo "Build the project..."
 ./build.sh
@@ -28,14 +42,14 @@ select_part() {
           ;;
       *)
           read -p "Version > " version
-          bumpversion --new_version=$version $part
+          bumpversion --new-version=$version all
           ;;
   esac
 }
 
 git pull --tags
 # Look for a version tag in Git. If not found, ask the user to provide one
-git describe --exact-match > /dev/null 2>&1 || (
+[ $(git tag --points-at HEAD | wc -l) == 1 ] || (
   latest_version=$(git describe --abbrev=00 || \
     (bumpversion --dry-run --list patch | grep current_version | sed -r s,"^.*=",,) || echo '0.0.1')
   echo
@@ -55,19 +69,20 @@ git describe --exact-match > /dev/null 2>&1 || (
     echo "Release aborted"
     exit 1
   fi
-  # Bumpversion v0.5.3 does not support annotated tags
-  git tag -a -m "PyPi release $updated_version" $updated_version
 )
 
-git push
-git push --tags
+updated_version=$(bumpversion --dry-run --list patch | grep current_version | sed -r s,"^.*=",,)
 
 # Build again to update the version
 echo "Build the project for distribution..."
 ./build.sh
 echo "[ok] Done"
 
+git push
+git push --tags
+
 # Push on PyPi
+echo "Publish on PyPi..."
 until twine upload dist/*
 do
   echo "Try again to login on PyPI and release this library..."
@@ -75,21 +90,7 @@ do
 done
 
 # Notify on slack
-set -e
-get_script_dir () {
-     SOURCE="${BASH_SOURCE[0]}"
-
-     while [ -h "$SOURCE" ]; do
-          DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
-          SOURCE="$( readlink "$SOURCE" )"
-          [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE"
-     done
-     cd -P "$( dirname "$SOURCE" )"
-     pwd
-}
-export WORKSPACE=$(get_script_dir)
 sed "s/USER/${USER^}/" $WORKSPACE/slack.json > $WORKSPACE/.slack.json
-sed -i.bak "s/VERSION/$(git describe)/" $WORKSPACE/.slack.json
+sed -i.bak "s/VERSION/$updated_version/" $WORKSPACE/.slack.json
 curl -k -X POST --data-urlencode payload@$WORKSPACE/.slack.json https://hbps1.chuv.ch/slack/dev-activity
-rm -f $WORKSPACE/.slack.json
-rm -f $WORKSPACE/.slack.json.bak
+rm -f $WORKSPACE/.slack.json $WORKSPACE/.slack.json.bak
