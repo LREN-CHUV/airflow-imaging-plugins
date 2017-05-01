@@ -226,7 +226,10 @@ class DockerPipelineOperator(DockerOperator, TransferPipelineXComs):
             raise
 
         if host_output_dir:
+            relative_context_path = os.path.normpath(self.pipeline_xcoms['relative_context_path'])
             self.pipeline_xcoms['folder'] = host_output_dir
+            self.pipeline_xcoms['root_folder'] = os.path.normpath(
+                host_output_dir + ('/..' * len(relative_context_path.split('/'))))
         if extra_info:
             self.pipeline_xcoms['extra_info'] = extra_info
         # Take last 10 lines of logs

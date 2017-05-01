@@ -140,7 +140,10 @@ class BashPipelineOperator(BashOperator, TransferPipelineXComs):
             self.trigger_dag(context, self.on_failure_trigger_dag_id, logs)
             raise
 
+        relative_context_path = os.path.normpath(self.pipeline_xcoms['relative_context_path'])
         self.pipeline_xcoms['folder'] = output_dir
+        self.pipeline_xcoms['root_folder'] = os.path.normpath(
+            output_dir + ('/..' * len(relative_context_path.split('/'))))
         self.pipeline_xcoms['output'] = logs
         self.pipeline_xcoms['error'] = ''
 

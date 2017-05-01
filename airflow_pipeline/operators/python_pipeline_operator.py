@@ -14,6 +14,7 @@ from airflow_pipeline.pipelines import TransferPipelineXComs
 
 import logging
 import json
+import os
 
 
 class PythonPipelineOperator(PythonOperator, TransferPipelineXComs):
@@ -116,9 +117,16 @@ class PythonPipelineOperator(PythonOperator, TransferPipelineXComs):
         if isinstance(return_value, dict):
             self.pipeline_xcoms.update(return_value)
             if 'folder' in return_value:
-                logging.info('Output folder: %s', return_value['folder'])
+                output_dir = return_value['folder']
+                logging.info('Output folder: %s', output_dir)
+                if 'root_folder' not in return_value:
+                    relative_context_path = os.path.normpath(self.pipeline_xcoms['relative_context_path'])
+                    self.pipeline_xcoms['folder'] = output_dir
+                    self.pipeline_xcoms['root_folder'] = os.path.normpath(
+                        output_dir + ('/..' * len(relative_context_path.split('/'))))
+
                 self.track_provenance(
-                    return_value['folder'], json.dumps(self.software_versions) if self.software_versions else '{}')
+                    output_dir, json.dumps(self.software_versions) if self.software_versions else '{}')
 
         self.write_pipeline_xcoms(context)
 

@@ -58,7 +58,7 @@ class ScanFlatFolderPipelineOperator(ScanFlatFolderOperator, TransferPipelineXCo
     :type dataset_config: list
     """
 
-    template_fields = tuple()
+    template_fields = ('incoming_parameters',)
     template_ext = tuple()
     ui_color = '#cceeeb'
 
@@ -73,6 +73,7 @@ class ScanFlatFolderPipelineOperator(ScanFlatFolderOperator, TransferPipelineXCo
             parent_task=None,
             dataset_config=None,
             organised_folder=True,
+            source_folder_param='folder',
             *args, **kwargs):
         super(ScanFlatFolderPipelineOperator, self).__init__(dataset=None,  # will be filled by pipeline XCOMs
                                                              folder=None,
@@ -83,13 +84,15 @@ class ScanFlatFolderPipelineOperator(ScanFlatFolderOperator, TransferPipelineXCo
                                                              depth=depth,
                                                              *args, **kwargs)
         TransferPipelineXComs.__init__(self, parent_task, dataset_config, organised_folder)
+        self.source_folder_param = source_folder_param
 
     def root_folder(self, context):
-        return self.pipeline_xcoms['folder']
+        return self.pipeline_xcoms[self.source_folder_param]
 
     def pre_execute(self, context):
         super(ScanFlatFolderPipelineOperator, self).pre_execute(context)
-        self.read_pipeline_xcoms(context, expected=['folder'])
+        self.read_pipeline_xcoms(context, expected=[self.source_folder_param])
 
-    # def execute(self, context)
-    #   No need to write pipeline XCOMs, this operator should be the last in the DAG
+    def execute(self, context):
+        super(ScanFlatFolderPipelineOperator, self).execute(context)
+        self.write_pipeline_xcoms(context)
