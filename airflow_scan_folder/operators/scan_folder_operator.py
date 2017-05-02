@@ -23,6 +23,16 @@ from .common import FolderOperator, default_extract_context, default_look_for_re
 from .common import default_trigger_dagrun, default_build_daily_folder_path_callable
 
 
+def _is_valid_folder_depth(folder, depth):
+    for d in range(0, depth):
+        try:
+            folder = os.path.join(folder, os.listdir(folder)[0])
+        except (OSError, IndexError):
+            logging.warning("Cannot find folder with depth %s from folder %s", str(depth), folder)
+            return False
+    return True
+
+
 class ScanFlatFolderOperator(FolderOperator):
 
     """
@@ -90,7 +100,7 @@ class ScanFlatFolderOperator(FolderOperator):
     @provide_session
     def scan_dirs(self, folder, context, session=None, depth=0):
 
-        if not os.path.exists(folder):
+        if not _is_valid_folder_depth(folder, depth):
             raise AirflowSkipException
 
         if depth == self.depth:
