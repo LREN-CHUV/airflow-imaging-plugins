@@ -24,6 +24,8 @@ from .common import default_trigger_dagrun, default_build_daily_folder_path_call
 
 
 def _is_valid_folder_depth(folder, depth):
+    if not os.path.exists(folder):
+        return False
     for d in range(0, depth):
         try:
             folder = os.path.join(folder, os.listdir(folder)[0])
