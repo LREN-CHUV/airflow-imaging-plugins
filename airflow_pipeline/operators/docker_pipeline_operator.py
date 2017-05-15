@@ -81,9 +81,10 @@ class DockerPipelineOperator(DockerOperator, TransferPipelineXComs):
         It should return the location of the output folder on the host containing the results of the computation.
         If None, an output volume is not mounted for the Docker container and provenance is not tracked.
     :type output_folder_callable: python callable
-    :param xcom_extra_callable: A reference to an object that is callable.
-        It should return a JSON formatted string.
-    :type xcom_extra_callable: python callable
+    :param metadata_folder_callable: A reference to an object that is callable.
+        It should return the location of the metadata folder on the host containing the imaging metadata.
+        This parameter is mostly useful for the reorganisation step.
+    :type metadata_folder_callable: python callable
     :param user: Default user inside the docker container.
     :type user: int or str
     :param volumes: List of volumes to mount into the container, e.g.
@@ -140,7 +141,7 @@ class DockerPipelineOperator(DockerOperator, TransferPipelineXComs):
             xcom_all=True,
             parent_task=None,
             output_folder_callable=default_output_folder,
-            xcom_extra_callable=None,
+            metadata_folder_callable=None,
             on_failure_trigger_dag_id=None,
             dataset_config=None,
             organised_folder=True,
@@ -171,7 +172,7 @@ class DockerPipelineOperator(DockerOperator, TransferPipelineXComs):
         self.container_input_dir = container_input_dir
         self.container_output_dir = container_output_dir
         self.output_folder_callable = output_folder_callable
-        self.xcom_extra_callable = xcom_extra_callable
+        self.metadata_folder_callable = metadata_folder_callable
         self.on_failure_trigger_dag_id = on_failure_trigger_dag_id
 
     def pre_execute(self, context):
@@ -184,9 +185,9 @@ class DockerPipelineOperator(DockerOperator, TransferPipelineXComs):
         host_output_dir = None
         if self.output_folder_callable:
             host_output_dir = self.output_folder_callable(**self.pipeline_xcoms)
-        extra_info = None
-        if self.xcom_extra_callable:
-            extra_info = self.xcom_extra_callable(**self.pipeline_xcoms)
+        metadata_folder = None
+        if self.metadata_folder_callable:
+            metadata_folder = self.metadata_folder_callable(**self.pipeline_xcoms)
 
         logging.info("Input folder: %s", host_input_dir)
         if host_output_dir:
@@ -199,8 +200,6 @@ class DockerPipelineOperator(DockerOperator, TransferPipelineXComs):
             except (OSError, Exception):
                 logging.error("Cannot cleanup output directory %s before executing Docker container %s",
                               host_output_dir, self.image)
-        if extra_info:
-            logging.info("Extra info: %s", extra_info)
 
         self.environment['AIRFLOW_INPUT_DIR'] = self.container_input_dir
         self.volumes.append('{0}:{1}:ro'.format(host_input_dir, self.container_input_dir))
@@ -226,9 +225,12 @@ class DockerPipelineOperator(DockerOperator, TransferPipelineXComs):
             raise
 
         if host_output_dir:
+            relative_context_path = os.path.normpath(self.pipeline_xcoms['relative_context_path'])
             self.pipeline_xcoms['folder'] = host_output_dir
-        if extra_info:
-            self.pipeline_xcoms['extra_info'] = extra_info
+            self.pipeline_xcoms['root_folder'] = os.path.normpath(
+                host_output_dir + ('/..' * len(relative_context_path.split('/'))))
+        if metadata_folder:
+            self.pipeline_xcoms['metadata_folder'] = metadata_folder
         # Take last 10 lines of logs
         self.pipeline_xcoms['output'] = logs  # TODO use something like this: '\n'.join(logs.split('\n')[-10:])
         self.pipeline_xcoms['error'] = ''

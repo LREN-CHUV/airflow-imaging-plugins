@@ -9,9 +9,19 @@ from textwrap import dedent
 from data_tracking.files_recording import create_provenance, visit
 
 
-PIPELINE_XCOMS = ['root_folder', 'folder', 'session_id', 'output', 'error', 'dataset',
-                  'matlab_version', 'spm_version', 'spm_revision', 'provenance_details',
-                  'provenance_previous_step_id', 'relative_context_path']
+PIPELINE_XCOMS = ['root_folder',            # root folder, usually provided by user
+                  'folder',                 # for incoming XCOMs: input folder, for outgoing XCOMs: output folder
+                  'relative_context_path',  # relative path from the folder up to the root folder
+                  'metadata_folder',        # folder containing extra metadata for the images
+                  'session_id',
+                  'output',                 # output logs
+                  'error',                  # error logs
+                  'dataset',                # name of the dataset under processing
+                  'matlab_version',
+                  'spm_version',
+                  'spm_revision',
+                  'provenance_details',
+                  'provenance_previous_step_id']
 
 
 def pipeline_trigger(parent_task):
@@ -55,6 +65,10 @@ class TransferPipelineXComs(object):
           {%  set session_id = task_instance.xcom_pull(task_ids='$parent_task', key='session_id') -%}
           {%- if session_id %}
           session_id = {{ session_id }}
+          {%  endif -%}
+          {%  set metadata_folder = task_instance.xcom_pull(task_ids='$parent_task', key='metadata_folder') -%}
+          {%- if metadata_folder %}
+          metadata_folder = {{ metadata_folder }}
           {%  endif -%}
           {%- set scan_date = task_instance.xcom_pull(task_ids='$parent_task', key='scan_date') -%}
           {%- if scan_date %}

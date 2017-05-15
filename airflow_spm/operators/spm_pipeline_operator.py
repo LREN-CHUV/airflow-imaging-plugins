@@ -190,7 +190,11 @@ class SpmPipelineOperator(SpmOperator, TransferPipelineXComs):
                 self.trigger_dag(context, self.on_failure_trigger_dag_id, self.out.getvalue(), self.err.getvalue())
                 raise
 
+            relative_context_path = os.path.normpath(self.pipeline_xcoms['relative_context_path'])
             self.pipeline_xcoms['folder'] = output_folder
+            self.pipeline_xcoms['root_folder'] = os.path.normpath(
+                output_folder + ('/..' * len(relative_context_path.split('/'))))
+
             self.pipeline_xcoms['output'] = self.out.getvalue()
             self.pipeline_xcoms['error'] = self.err.getvalue()
 
