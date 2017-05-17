@@ -1,6 +1,11 @@
 
 # Changelog
 
+## 2.3.0 - 2017-05-17
+
+* Update to Apache Airflow 1.8.1
+* Improve values in pipeline XComs
+
 ## 2.2.0 - 2017-03-30
 
 * SpmPipelineOperator inherits from SpmOperator
