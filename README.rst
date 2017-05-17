@@ -1,4 +1,4 @@
-|License| |Codacy Badge| |Code Health| |PyPI| |CHUV|
+|CHUV| |License| |Codacy Badge| |Code Health| |PyPI|
 
 Airflow Imaging plugins
 =======================
@@ -95,6 +95,20 @@ Airflow setup for MRI scans pipeline:
    entries:
 -  SPM\_DIR: root path to the installation of SPM
 
+build
+-----
+
+Run ``./build.sh``.
+
+Push on PyPi
+------------
+
+Run ``./publish.sh``.
+
+(This builds the project prior to pushing it).
+
+.. |CHUV| image:: https://img.shields.io/badge/CHUV-LREN-AF4C64.svg
+   :target: https://www.unil.ch/lren/en/home.html
 .. |License| image:: https://img.shields.io/badge/license-Apache--2.0-blue.svg
    :target: https://github.com/LREN-CHUV/airflow-imaging-plugins/blob/master/LICENSE
 .. |Codacy Badge| image:: https://api.codacy.com/project/badge/Grade/7a9c796392e4420495ee1fabd0fce9ae
@@ -103,5 +117,3 @@ Airflow setup for MRI scans pipeline:
    :target: https://landscape.io/github/LREN-CHUV/airflow-imaging-plugins/master
 .. |PyPI| image:: https://img.shields.io/pypi/v/airflow-imaging-plugins.svg
    :target: https://pypi.python.org/pypi/airflow-imaging-plugins/
-.. |CHUV| image:: https://img.shields.io/badge/CHUV-LREN-AF4C64.svg
-   :target: https://www.unil.ch/lren/en/home.html
