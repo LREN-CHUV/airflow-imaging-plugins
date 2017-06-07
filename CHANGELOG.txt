@@ -1,6 +1,10 @@
 
 # Changelog
 
+## 2.4.0 - 2017-06-07
+
+* DockerPipelineOperator: add cleanup_output_folder parameter.
+
 ## 2.3.0 - 2017-05-17
 
 * Update to Apache Airflow 1.8.1

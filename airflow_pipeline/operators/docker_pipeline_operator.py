@@ -85,6 +85,9 @@ class DockerPipelineOperator(DockerOperator, TransferPipelineXComs):
         It should return the location of the metadata folder on the host containing the imaging metadata.
         This parameter is mostly useful for the reorganisation step.
     :type metadata_folder_callable: python callable
+    :param cleanup_output_folder: If True, automatically cleans up the output folder before executing the container
+        to ensure that no previous run has left some data. Defaults to False.
+    :type cleanup_output_folder: bool
     :param user: Default user inside the docker container.
     :type user: int or str
     :param volumes: List of volumes to mount into the container, e.g.
@@ -142,6 +145,7 @@ class DockerPipelineOperator(DockerOperator, TransferPipelineXComs):
             parent_task=None,
             output_folder_callable=default_output_folder,
             metadata_folder_callable=None,
+            cleanup_output_folder=False,
             on_failure_trigger_dag_id=None,
             dataset_config=None,
             organised_folder=True,
@@ -173,6 +177,7 @@ class DockerPipelineOperator(DockerOperator, TransferPipelineXComs):
         self.container_output_dir = container_output_dir
         self.output_folder_callable = output_folder_callable
         self.metadata_folder_callable = metadata_folder_callable
+        self.cleanup_output_folder = cleanup_output_folder
         self.on_failure_trigger_dag_id = on_failure_trigger_dag_id
 
     def pre_execute(self, context):
@@ -190,7 +195,7 @@ class DockerPipelineOperator(DockerOperator, TransferPipelineXComs):
             metadata_folder = self.metadata_folder_callable(**self.pipeline_xcoms)
 
         logging.info("Input folder: %s", host_input_dir)
-        if host_output_dir:
+        if host_output_dir and self.cleanup_output_folder:
             logging.info("Output folder: %s", host_output_dir)
             # Ensure that there is no data in the output folder
             try:
