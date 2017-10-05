@@ -1,6 +1,8 @@
 description: "Airflow plugins providing support for preprocessing of neuroimaging data"
 
 long_description: |
+  A library of Airflow plugins providing support for preprocessing of neuroimaging data.
+
   The following packages are provided:
 
   * airflow_freespace: Sensors that check the amount of free space on the disk and waits until enough free space is available
