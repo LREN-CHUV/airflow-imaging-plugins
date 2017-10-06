@@ -2,8 +2,8 @@
 
 set -e
 
-if [[ -z "$CIRCLECI" ]]; then
-  # Generate README.rst from README.md (useful to publish on PyPi)
+# Generate README.rst from README.md (useful to publish on PyPi)
+if [ ! $CIRCLECI ]; then
   pandoc --from=markdown --to=rst --output=README.rst README.md
 fi
 
