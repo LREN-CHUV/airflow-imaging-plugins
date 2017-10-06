@@ -5,7 +5,7 @@ jobs:
   build:
     working_directory: ~/src
     docker:
-      - image: hbpmip/airflow-test-py35:1.8.2-1
+      - image: hbpmip/airflow-test-py35:1.8.2-2
     environment:
        - CIRCLECI: true
     steps:
