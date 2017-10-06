@@ -2,8 +2,10 @@
 
 set -e
 
-# Generate README.rst from README.md (useful to publish on PyPi)
-pandoc --from=markdown --to=rst --output=README.rst README.md
+if [[ -n "$CIRCLECI" ]]; then
+  # Generate README.rst from README.md (useful to publish on PyPi)
+  pandoc --from=markdown --to=rst --output=README.rst README.md
+fi
 
 # Remove old builds
 rm -rf dist/*
