@@ -24,7 +24,7 @@ _classifiers = (
 
 _install_requires = [
     'apache-airflow==1.8.2',
-    'data-tracking>=1.7.1'
+    'data-tracking>=1.7.2'
 ]
 
 setup(
