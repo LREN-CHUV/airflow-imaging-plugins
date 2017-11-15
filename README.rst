@@ -1,4 +1,4 @@
-|CHUV| |License| |Codacy Badge| |Code Health| |PyPI|
+|CHUV| |License| |Codacy Badge| |PyPI| |CircleCI|
 
 Airflow Imaging plugins
 =======================
@@ -113,7 +113,7 @@ Run ``./publish.sh``.
    :target: https://github.com/LREN-CHUV/airflow-imaging-plugins/blob/master/LICENSE
 .. |Codacy Badge| image:: https://api.codacy.com/project/badge/Grade/7a9c796392e4420495ee1fabd0fce9ae
    :target: https://www.codacy.com/app/hbp-mip/airflow-imaging-plugins?utm_source=github.com&utm_medium=referral&utm_content=LREN-CHUV/airflow-imaging-plugins&utm_campaign=Badge_Grade
-.. |Code Health| image:: https://landscape.io/github/LREN-CHUV/airflow-imaging-plugins/master/landscape.svg?style=flat
-   :target: https://landscape.io/github/LREN-CHUV/airflow-imaging-plugins/master
 .. |PyPI| image:: https://img.shields.io/pypi/v/airflow-imaging-plugins.svg
    :target: https://pypi.python.org/pypi/airflow-imaging-plugins/
+.. |CircleCI| image:: https://circleci.com/gh/HBPMedical/airflow-imaging-plugins.svg?style=svg
+   :target: https://circleci.com/gh/HBPMedical/airflow-imaging-plugins
