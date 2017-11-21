@@ -161,7 +161,7 @@ class SpmPipelineOperator(SpmOperator, TransferPipelineXComs):
             # can break if they find unexpected data...
             try:
                 if os.path.exists(output_folder):
-                    os.removedirs(output_folder)
+                    rmtree(output_folder)
             except (OSError, Exception):
                 logging.error("Cannot cleanup output directory %s before executing SPM function %s",
                               output_folder, self.spm_function)
