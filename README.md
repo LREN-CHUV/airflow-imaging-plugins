@@ -75,3 +75,9 @@ Run `./build.sh`.
 Run `./publish.sh`.
 
 (This builds the project prior to pushing it).
+
+# Acknowledgements
+
+This work has been funded by the European Union Seventh Framework Program (FP7/2007­2013) under grant agreement no. 604102 (HBP)
+
+This work is part of SP8 of the Human Brain Project (SGA1).
